@@ -27,7 +27,7 @@ class NotificationService {
     }
     
     /// 发送剪贴板更新通知
-    func sendClipboardNotification(content: String) {
+    func sendClipboardNotification(content: String, isImage: Bool = false) {
         let settings = AppSettings.load()
         guard settings.notificationEnabled else {
             print("📢 通知已禁用")
@@ -35,7 +35,7 @@ class NotificationService {
         }
         
         let notificationContent = UNMutableNotificationContent()
-        notificationContent.title = "剪贴板已更新"
+        notificationContent.title = isImage ? "📸 复制了图片" : "📋 剪贴板已更新"
         
         // 截断内容，最多显示 50 个字符
         let truncated = content.count > 50 
@@ -53,7 +53,7 @@ class NotificationService {
             if let error = error {
                 print("❌ 发送通知失败: \(error)")
             } else {
-                print("✅ 通知已发送")
+                print("✅ 通知已发送: \(truncated)")
             }
         }
     }

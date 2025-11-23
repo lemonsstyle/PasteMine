@@ -15,13 +15,24 @@ class PasteService {
     
     private init() {}
     
-    /// 粘贴内容到活跃应用
-    func paste(content: String) {
-        // 1. 复制到剪贴板
+    /// 粘贴剪贴板项到活跃应用
+    func paste(item: ClipboardItem) {
+        // 1. 根据类型复制到剪贴板
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
-        pasteboard.setString(content, forType: .string)
-        print("📋 已复制到剪贴板: \(content.prefix(50))...")
+        
+        switch item.itemType {
+        case .text:
+            if let content = item.content {
+                pasteboard.setString(content, forType: .string)
+                print("📋 已复制文本到剪贴板: \(content.prefix(50))...")
+            }
+        case .image:
+            if let image = item.image {
+                pasteboard.writeObjects([image])
+                print("🖼️  已复制图片到剪贴板: \(item.imageWidth)×\(item.imageHeight)")
+            }
+        }
         
         // 2. 隐藏窗口
         windowManager?.hide()
@@ -34,6 +45,30 @@ class PasteService {
                 print("✅ 已激活应用: \(previousApp.localizedName ?? "未知")")
                 
                 // 等待应用激活后执行粘贴
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    self.simulatePaste()
+                }
+            } else {
+                self.simulatePaste()
+            }
+        }
+    }
+    
+    /// 粘贴文本内容（兼容旧接口）
+    @available(*, deprecated, message: "使用 paste(item:) 代替")
+    func paste(content: String) {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(content, forType: .string)
+        print("📋 已复制到剪贴板: \(content.prefix(50))...")
+        
+        windowManager?.hide()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            if let previousApp = self.windowManager?.getPreviousApp() {
+                previousApp.activate(options: [])
+                print("✅ 已激活应用: \(previousApp.localizedName ?? "未知")")
+                
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     self.simulatePaste()
                 }

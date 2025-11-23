@@ -21,8 +21,19 @@ struct HistoryListView: View {
         if searchText.isEmpty {
             return Array(items)
         } else {
-            return items.filter { 
-                ($0.content ?? "").localizedCaseInsensitiveContains(searchText)
+            return items.filter {
+                // 文本：搜索内容
+                if $0.itemType == .text {
+                    return ($0.content ?? "").localizedCaseInsensitiveContains(searchText)
+                }
+                // 图片：搜索来源应用或"图片"关键字
+                else if $0.itemType == .image {
+                    let appMatch = ($0.appSource ?? "").localizedCaseInsensitiveContains(searchText)
+                    let keywordMatch = "图片".localizedCaseInsensitiveContains(searchText) || 
+                                       "image".localizedCaseInsensitiveContains(searchText)
+                    return appMatch || keywordMatch
+                }
+                return false
             }
         }
     }
@@ -55,8 +66,7 @@ struct HistoryListView: View {
     }
     
     private func pasteItem(_ item: ClipboardItem) {
-        guard let content = item.content else { return }
-        PasteService.shared.paste(content: content)
+        PasteService.shared.paste(item: item)
     }
     
     private func deleteItem(_ item: ClipboardItem) {
