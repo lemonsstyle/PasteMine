@@ -124,7 +124,7 @@ struct SettingsView: View {
             }
         }
         .padding()
-        .frame(width: 500, height: 700)  // 调整尺寸：宽度 500，高度 700
+        .frame(width: 400, height: 650)  // 调整尺寸：宽度 500，高度 700
     }
     
     private var retentionDescription: String {

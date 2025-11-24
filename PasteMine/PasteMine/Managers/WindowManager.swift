@@ -24,7 +24,7 @@ class WindowManager: NSObject {
             .environment(\.managedObjectContext, DatabaseService.shared.context)
         
         window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 600, height: 500),
+            contentRect: NSRect(x: 0, y: 0, width: 400, height: 600),
             styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
