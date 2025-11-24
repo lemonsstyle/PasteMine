@@ -81,6 +81,7 @@ struct HistoryItemView: View {
             Spacer()
         }
         .padding(.vertical, 4)
+        .contentShape(Rectangle())  // 让整行都可点击，包括空白区域
     }
 }
 
