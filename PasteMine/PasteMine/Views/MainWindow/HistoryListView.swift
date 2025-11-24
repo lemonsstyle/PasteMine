@@ -7,6 +7,11 @@
 
 import SwiftUI
 
+// 通知名称：窗口显示时滚动到顶部
+extension Notification.Name {
+    static let scrollToTop = Notification.Name("scrollToTop")
+}
+
 struct HistoryListView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @FetchRequest(
@@ -16,7 +21,7 @@ struct HistoryListView: View {
     private var items: FetchedResults<ClipboardItem>
     
     @State private var searchText = ""
-    @State private var scrollToTopID = UUID()
+    @State private var scrollToTopID: UUID = UUID()
     
     var filteredItems: [ClipboardItem] {
         if searchText.isEmpty {
@@ -57,7 +62,7 @@ struct HistoryListView: View {
                         
                         ForEach(filteredItems) { item in
                             HistoryItemView(item: item)
-                                .id(item.id)  // 为每个 item 添加 id
+                                .id(item.id)
                                 .onTapGesture {
                                     pasteItem(item)
                                 }
@@ -69,17 +74,19 @@ struct HistoryListView: View {
                         }
                     }
                     .listStyle(.plain)
+                    .onReceive(NotificationCenter.default.publisher(for: .scrollToTop)) { _ in
+                        // 窗口显示时，滚动到顶部
+                        withAnimation(.easeOut(duration: 0.3)) {
+                            proxy.scrollTo("top", anchor: .top)
+                        }
+                    }
                     .onAppear {
-                        // 窗口显示时滚动到顶部
-                        scrollToTop(proxy: proxy)
-                    }
-                    .onChange(of: scrollToTopID) { _ in
-                        // 当 scrollToTopID 变化时，滚动到顶部
-                        scrollToTop(proxy: proxy)
-                    }
-                    .onReceive(NotificationCenter.default.publisher(for: .windowDidShow)) { _ in
-                        // 监听窗口显示通知
-                        scrollToTop(proxy: proxy)
+                        // 首次显示时也滚动到顶部
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            withAnimation(.easeOut(duration: 0.3)) {
+                                proxy.scrollTo("top", anchor: .top)
+                            }
+                        }
                     }
                 }
             }
@@ -122,20 +129,5 @@ struct HistoryListView: View {
             }
         }
     }
-    
-    /// 滚动到顶部
-    private func scrollToTop(proxy: ScrollViewProxy) {
-        // 延迟一点确保列表已渲染
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            withAnimation(.easeOut(duration: 0.2)) {
-                proxy.scrollTo("top", anchor: .top)
-            }
-        }
-    }
-}
-
-// 窗口显示通知
-extension Notification.Name {
-    static let windowDidShow = Notification.Name("windowDidShow")
 }
 
