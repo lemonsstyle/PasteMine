@@ -56,6 +56,11 @@ class WindowManager: NSObject {
         // 启动点击外部监听
         startClickOutsideMonitor()
         
+        // 发送窗口显示通知（用于滚动列表到顶部）
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            NotificationCenter.default.post(name: .windowDidShow, object: nil)
+        }
+        
         print("👁️  窗口已显示在鼠标附近")
     }
     
