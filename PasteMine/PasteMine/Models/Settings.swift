@@ -9,7 +9,7 @@ import Foundation
 
 struct AppSettings: Codable {
     var notificationEnabled: Bool = true
-    var globalShortcut: String = "⌘⇧V"
+    var globalShortcut: KeyboardShortcut = .defaultShortcut  // 默认 ⌘⇧V
     var maxHistoryCount: Int = 50  // 默认 50 条
     var retentionDays: Int = 3      // 默认 3 天（0 = 永久）
     var maxImageSize: Int = 10      // 默认 10MB
@@ -31,6 +31,9 @@ struct AppSettings: Codable {
         if let data = try? JSONEncoder().encode(self) {
             UserDefaults.standard.set(data, forKey: Self.key)
         }
+        
+        // 通知快捷键已更改
+        NotificationCenter.default.post(name: .shortcutDidChange, object: nil)
     }
     
     /// 历史记录数量选项
