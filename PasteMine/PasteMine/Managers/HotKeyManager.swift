@@ -8,15 +8,37 @@
 import Carbon
 import AppKit
 
+// 通知名称
+extension Notification.Name {
+    static let shortcutDidChange = Notification.Name("shortcutDidChange")
+}
+
 class HotKeyManager {
     private var hotKeyRef: EventHotKeyRef?
     private var eventHandler: EventHandlerRef?
     private var callback: (() -> Void)?
     
-    /// 注册全局快捷键 (Cmd+Shift+V)
+    init() {
+        // 监听快捷键设置变更
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(shortcutSettingsDidChange),
+            name: .shortcutDidChange,
+            object: nil
+        )
+    }
+    
+    /// 注册全局快捷键（使用设置中的快捷键）
     /// 使用 Carbon API，不需要"输入监控"权限
     func register(callback: @escaping () -> Void) {
         self.callback = callback
+        
+        // 从设置读取快捷键
+        let settings = AppSettings.load()
+        let shortcut = settings.globalShortcut
+        
+        // 先注销旧的快捷键
+        unregister()
         
         // 定义快捷键 ID
         var hotKeyID = EventHotKeyID()
@@ -55,14 +77,10 @@ class HotKeyManager {
             &eventHandler
         )
         
-        // 注册热键：Cmd + Shift + V
-        // cmdKey = 256, shiftKey = 512
-        let modifiers = UInt32(cmdKey | shiftKey)
-        let keyCode = UInt32(kVK_ANSI_V) // V 键
-        
+        // 注册热键（使用设置中的键码和修饰键）
         let status = RegisterEventHotKey(
-            keyCode,
-            modifiers,
+            UInt32(shortcut.keyCode),
+            shortcut.modifiers,
             hotKeyID,
             GetApplicationEventTarget(),
             0,
@@ -70,7 +88,7 @@ class HotKeyManager {
         )
         
         if status == noErr {
-            print("✅ 全局快捷键已注册 (⌘⇧V) - 使用 Carbon API，无需输入监控权限")
+            print("✅ 全局快捷键已注册: \(shortcut.displayString) - 使用 Carbon API")
         } else {
             print("⚠️  快捷键注册失败: \(status)")
         }
@@ -87,11 +105,18 @@ class HotKeyManager {
             RemoveEventHandler(eventHandler)
             self.eventHandler = nil
         }
-        
-        print("⏹️  全局快捷键已注销")
+    }
+    
+    /// 快捷键设置变更时重新注册
+    @objc private func shortcutSettingsDidChange() {
+        print("🔄 快捷键设置已变更，重新注册...")
+        if let callback = callback {
+            register(callback: callback)
+        }
     }
     
     deinit {
+        NotificationCenter.default.removeObserver(self)
         unregister()
     }
 }

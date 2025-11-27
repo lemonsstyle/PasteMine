@@ -98,13 +98,18 @@ struct SettingsView: View {
             
             Divider()
             
-            // 快捷键说明
+            // 全局快捷键设置
             VStack(alignment: .leading, spacing: 8) {
                 Text("全局快捷键")
                     .font(.headline)
                 
-                Text("⌘⇧V - 显示/隐藏剪贴板历史窗口")
-                    .font(.body)
+                ShortcutRecorderView(shortcut: $settings.globalShortcut)
+                    .onChange(of: settings.globalShortcut) { _ in
+                        settings.save()
+                    }
+                
+                Text("用于显示/隐藏剪贴板历史窗口")
+                    .font(.caption)
                     .foregroundColor(.secondary)
             }
             
@@ -119,7 +124,7 @@ struct SettingsView: View {
             }
         }
         .padding()
-        .frame(width: 480, height: 600)
+        .frame(width: 400, height: 650)  // 调整尺寸：宽度 500，高度 700
     }
     
     private var retentionDescription: String {

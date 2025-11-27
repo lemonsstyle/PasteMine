@@ -7,6 +7,11 @@
 
 import SwiftUI
 
+// 通知名称：窗口显示时滚动到顶部
+extension Notification.Name {
+    static let scrollToTop = Notification.Name("scrollToTop")
+}
+
 struct HistoryListView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @FetchRequest(
@@ -16,6 +21,7 @@ struct HistoryListView: View {
     private var items: FetchedResults<ClipboardItem>
     
     @State private var searchText = ""
+    @State private var scrollToTopID: UUID = UUID()
     
     var filteredItems: [ClipboardItem] {
         if searchText.isEmpty {
@@ -47,20 +53,42 @@ struct HistoryListView: View {
             if filteredItems.isEmpty {
                 EmptyStateView(message: searchText.isEmpty ? "暂无剪贴板历史" : "没有找到匹配的记录")
             } else {
-                List {
-                    ForEach(filteredItems) { item in
-                        HistoryItemView(item: item)
-                            .onTapGesture {
-                                pasteItem(item)
-                            }
-                            .contextMenu {
-                                Button("删除") {
-                                    deleteItem(item)
+                ScrollViewReader { proxy in
+                    List {
+                        // 顶部锚点（用于滚动定位）
+                        Color.clear
+                            .frame(height: 0)
+                            .id("top")
+                        
+                        ForEach(filteredItems) { item in
+                            HistoryItemView(item: item)
+                                .id(item.id)
+                                .onTapGesture {
+                                    pasteItem(item)
                                 }
+                                .contextMenu {
+                                    Button("删除") {
+                                        deleteItem(item)
+                                    }
+                                }
+                        }
+                    }
+                    .listStyle(.plain)
+                    .onReceive(NotificationCenter.default.publisher(for: .scrollToTop)) { _ in
+                        // 窗口显示时，滚动到顶部
+                        withAnimation(.easeOut(duration: 0.3)) {
+                            proxy.scrollTo("top", anchor: .top)
+                        }
+                    }
+                    .onAppear {
+                        // 首次显示时也滚动到顶部
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            withAnimation(.easeOut(duration: 0.3)) {
+                                proxy.scrollTo("top", anchor: .top)
                             }
+                        }
                     }
                 }
-                .listStyle(.plain)
             }
         }
     }
