@@ -9,6 +9,7 @@ import SwiftUI
 
 struct HistoryItemView: View {
     let item: ClipboardItem
+    var isSelected: Bool = false
     @State private var isHovered = false
 
     private var displayContent: String {
@@ -89,28 +90,28 @@ struct HistoryItemView: View {
             .padding(.horizontal, 12)
             .contentShape(Rectangle())
             .background {
-                if isHovered {
+                if isSelected || isHovered {
                     if #available(macOS 14, *) {
                         RoundedRectangle(cornerRadius: 10)
-                            .fill(.regularMaterial.opacity(0.9))
+                            .fill(.regularMaterial.opacity(isSelected ? 1.0 : 0.9))
                             .overlay {
                                 // 微妙的光晕效果
                                 RoundedRectangle(cornerRadius: 10)
                                     .fill(
                                         RadialGradient(
-                                            colors: [.white.opacity(0.15), .clear],
+                                            colors: [.white.opacity(isSelected ? 0.2 : 0.15), .clear],
                                             center: .center,
                                             startRadius: 0,
                                             endRadius: 150
                                         )
                                     )
                             }
-                            .shadow(color: .black.opacity(0.12),
-                                    radius: 6,
-                                    y: 2)
+                            .shadow(color: .black.opacity(isSelected ? 0.15 : 0.12),
+                                    radius: isSelected ? 8 : 6,
+                                    y: isSelected ? 3 : 2)
                     } else {
                         RoundedRectangle(cornerRadius: 10)
-                            .fill(Color(NSColor.controlBackgroundColor).opacity(0.5))
+                            .fill(Color(NSColor.controlBackgroundColor).opacity(isSelected ? 0.7 : 0.5))
                     }
                 }
             }

@@ -9,7 +9,6 @@ import SwiftUI
 
 struct SearchBarView: View {
     @Binding var searchText: String
-    var onClearAll: () -> Void
     @State private var isHovered = false
 
     var body: some View {
@@ -27,13 +26,6 @@ struct SearchBarView: View {
                 }
                 .buttonStyle(.plain)
             }
-
-            Button(action: onClearAll) {
-                Image(systemName: "trash")
-                    .foregroundStyle(.secondary)
-            }
-            .buttonStyle(.plain)
-            .help("清空所有历史")
         }
         .padding(8)
         .background {
