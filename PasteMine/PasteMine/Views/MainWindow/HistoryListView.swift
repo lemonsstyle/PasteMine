@@ -173,18 +173,45 @@ struct HistoryListView: View {
         if let window = NSApp.keyWindow {
             alert.beginSheetModal(for: window) { response in
                 if response == .alertFirstButtonReturn {
-                    // 移除动画，立即删除
-                    try? DatabaseService.shared.clearAll()
-                    selectedIndex = 0
+                    // 立即关闭窗口，让用户看不到删除过程
+                    AppDelegate.shared?.windowManager?.hide()
+
+                    // 在后台执行删除操作
+                    DispatchQueue.global(qos: .userInitiated).async {
+                        do {
+                            try DatabaseService.shared.clearAll()
+                            print("🗑️  后台删除完成")
+
+                            // 在主线程更新 UI 状态
+                            DispatchQueue.main.async {
+                                self.selectedIndex = 0
+                            }
+                        } catch {
+                            print("❌ 删除失败: \(error)")
+                        }
+                    }
                 }
             }
         } else {
             // 如果没有 keyWindow，直接显示对话框
             let response = alert.runModal()
             if response == .alertFirstButtonReturn {
-                // 移除动画，立即删除
-                try? DatabaseService.shared.clearAll()
-                selectedIndex = 0
+                // 立即关闭窗口
+                AppDelegate.shared?.windowManager?.hide()
+
+                // 在后台执行删除
+                DispatchQueue.global(qos: .userInitiated).async {
+                    do {
+                        try DatabaseService.shared.clearAll()
+                        print("🗑️  后台删除完成")
+
+                        DispatchQueue.main.async {
+                            self.selectedIndex = 0
+                        }
+                    } catch {
+                        print("❌ 删除失败: \(error)")
+                    }
+                }
             }
         }
     }

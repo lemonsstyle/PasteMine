@@ -117,23 +117,20 @@ class DatabaseService {
     
     /// 清空所有记录
     func clearAll() throws {
-        // 先获取所有图片记录并删除文件
+        // 获取所有记录
         let request = ClipboardItem.fetchRequest()
-        request.predicate = NSPredicate(format: "type == %@", ClipboardItemType.image.rawValue)
-        let imageItems = try context.fetch(request)
-        
-        for item in imageItems {
-            if let imagePath = item.imagePath {
+        let allItems = try context.fetch(request)
+
+        // 逐个删除（这样会正确触发 SwiftUI 的 @FetchRequest 更新）
+        for item in allItems {
+            // 如果是图片，删除文件
+            if item.itemType == .image, let imagePath = item.imagePath {
                 ImageStorageManager.shared.deleteImage(at: imagePath)
             }
+            context.delete(item)
         }
-        
-        // 批量删除所有记录
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: NSFetchRequest<NSFetchRequestResult>(entityName: "ClipboardItem"))
-        try container.persistentStoreCoordinator.execute(deleteRequest, with: context)
+
         try context.save()
-        context.reset() // 重置上下文以反映更改
-        
         print("🗑️  已清空所有历史记录")
     }
     

@@ -9,14 +9,19 @@ import SwiftUI
 import AppKit
 
 class AppDelegate: NSObject, NSApplicationDelegate {
+    static var shared: AppDelegate?
+
     var statusItem: NSStatusItem?
     var clipboardMonitor = ClipboardMonitor()
     var hotKeyManager: HotKeyManager?
     var windowManager: WindowManager?
     
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // 设置全局访问点
+        AppDelegate.shared = self
+
         // 隐藏 Dock 图标（已在 Info.plist 设置 LSUIElement）
-        
+
         // 初始化窗口管理器
         windowManager = WindowManager()
         
