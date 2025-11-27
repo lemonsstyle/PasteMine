@@ -40,7 +40,8 @@ struct SearchBarView: View {
                     .fill(Color(NSColor.controlBackgroundColor))
             }
         }
-        .padding()
+        .padding(.horizontal)
+        .padding(.top)
         .onHover { hovering in
             withAnimation(.smooth(duration: 0.2)) {
                 isHovered = hovering

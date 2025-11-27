@@ -80,6 +80,8 @@ struct HistoryListView: View {
                     }
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
+                    .scrollIndicators(.automatic, axes: .vertical)
+                    .background(ScrollViewConfigurator())
                     .background {
                         if #available(macOS 14, *) {
                             Color.clear
@@ -261,6 +263,35 @@ struct KeyboardEventView: NSViewRepresentable {
 
         override func keyDown(with event: NSEvent) {
             keyHandler?(event)
+        }
+    }
+}
+
+// 滚动条外观配置器
+struct ScrollViewConfigurator: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        DispatchQueue.main.async {
+            if let scrollView = view.enclosingScrollView {
+                scrollView.scrollerStyle = .overlay
+                scrollView.hasVerticalScroller = true
+                scrollView.autohidesScrollers = false
+
+                // 设置滚动条样式为深色
+                if #available(macOS 14, *) {
+                    scrollView.scrollerKnobStyle = .dark
+                }
+            }
+        }
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        if let scrollView = nsView.enclosingScrollView {
+            scrollView.scrollerStyle = .overlay
+            if #available(macOS 14, *) {
+                scrollView.scrollerKnobStyle = .dark
+            }
         }
     }
 }
