@@ -152,7 +152,8 @@ struct HistoryListView: View {
     }
 
     private func deleteItem(_ item: ClipboardItem) {
-        withAnimation {
+        // 使用快速动画删除单条记录
+        withAnimation(.easeOut(duration: 0.15)) {
             try? DatabaseService.shared.delete(item)
         }
         // 调整选中索引
@@ -172,9 +173,8 @@ struct HistoryListView: View {
         if let window = NSApp.keyWindow {
             alert.beginSheetModal(for: window) { response in
                 if response == .alertFirstButtonReturn {
-                    withAnimation {
-                        try? DatabaseService.shared.clearAll()
-                    }
+                    // 移除动画，立即删除
+                    try? DatabaseService.shared.clearAll()
                     selectedIndex = 0
                 }
             }
@@ -182,9 +182,8 @@ struct HistoryListView: View {
             // 如果没有 keyWindow，直接显示对话框
             let response = alert.runModal()
             if response == .alertFirstButtonReturn {
-                withAnimation {
-                    try? DatabaseService.shared.clearAll()
-                }
+                // 移除动画，立即删除
+                try? DatabaseService.shared.clearAll()
                 selectedIndex = 0
             }
         }
