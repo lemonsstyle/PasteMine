@@ -10,33 +10,50 @@ import SwiftUI
 struct SearchBarView: View {
     @Binding var searchText: String
     var onClearAll: () -> Void
-    
+    @State private var isHovered = false
+
     var body: some View {
         HStack {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
-            
+                .foregroundStyle(.secondary)
+
             TextField("搜索...", text: $searchText)
                 .textFieldStyle(.plain)
-            
+
             if !searchText.isEmpty {
                 Button(action: { searchText = "" }) {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
             }
-            
+
             Button(action: onClearAll) {
                 Image(systemName: "trash")
+                    .foregroundStyle(.secondary)
             }
             .buttonStyle(.plain)
             .help("清空所有历史")
         }
         .padding(8)
-        .background(Color(NSColor.controlBackgroundColor))
-        .cornerRadius(8)
+        .background {
+            if #available(macOS 14, *) {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(.regularMaterial)
+                    .shadow(color: .black.opacity(isHovered ? 0.12 : 0.06),
+                            radius: isHovered ? 4 : 2,
+                            y: isHovered ? 2 : 1)
+            } else {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color(NSColor.controlBackgroundColor))
+            }
+        }
         .padding()
+        .onHover { hovering in
+            withAnimation(.smooth(duration: 0.2)) {
+                isHovered = hovering
+            }
+        }
     }
 }
 

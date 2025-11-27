@@ -59,7 +59,7 @@ struct HistoryListView: View {
                         Color.clear
                             .frame(height: 0)
                             .id("top")
-                        
+
                         ForEach(filteredItems) { item in
                             HistoryItemView(item: item)
                                 .id(item.id)
@@ -71,9 +71,19 @@ struct HistoryListView: View {
                                         deleteItem(item)
                                     }
                                 }
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
                         }
                     }
                     .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .background {
+                        if #available(macOS 14, *) {
+                            Color.clear
+                        } else {
+                            Color(NSColor.windowBackgroundColor)
+                        }
+                    }
                     .onReceive(NotificationCenter.default.publisher(for: .scrollToTop)) { _ in
                         // 窗口显示时，滚动到顶部
                         withAnimation(.easeOut(duration: 0.3)) {
