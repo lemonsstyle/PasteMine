@@ -38,7 +38,6 @@ class NotificationService {
         UNUserNotificationCenter.current().getNotificationSettings { notificationSettings in
             print("📊 系统通知权限状态: \(notificationSettings.authorizationStatus.rawValue)")
             print("📊 通知样式: \(notificationSettings.alertStyle.rawValue)")
-            print("📊 是否允许横幅: \(notificationSettings.bannerSetting.rawValue)")
             print("📊 是否允许声音: \(notificationSettings.soundSetting.rawValue)")
 
             guard notificationSettings.authorizationStatus == .authorized else {
