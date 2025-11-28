@@ -18,15 +18,15 @@ class SoundService {
     /// 播放复制音效
     func playCopySound() {
         let settings = AppSettings.load()
-        let soundNumber = settings.soundTheme * 2 - 1  // 1→1, 2→3, 3→5
-        playSound(named: "\(soundNumber).wav")
+        guard settings.soundEnabled else { return }
+        playSound(named: "3.wav")  // 水笔复制音效
     }
 
     /// 播放粘贴音效
     func playPasteSound() {
         let settings = AppSettings.load()
-        let soundNumber = settings.soundTheme * 2  // 1→2, 2→4, 3→6
-        playSound(named: "\(soundNumber).wav")
+        guard settings.soundEnabled else { return }
+        playSound(named: "4.wav")  // 水笔粘贴音效
     }
 
     /// 播放指定音效文件

@@ -22,11 +22,11 @@
 		</data>
 		<key>Resources/5.wav</key>
 		<data>
-		H1LRU1KyRlqZAyg40Y5lHiSRoUQ=
+		m+5wwLlIgysHHVinuclIypwaX7U=
 		</data>
 		<key>Resources/6.wav</key>
 		<data>
-		OgKi0QC8GJHSQ81c/atAEWvCBSo=
+		K5NoMa8YdUoiB1Y/0ycqesSz2cU=
 		</data>
 		<key>Resources/Info.plist</key>
 		<data>
@@ -47,7 +47,7 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			guCutjQUeKsUGd8bhyc85xqAcfA=
+			7VpZajT9eH4wdkTLcGXgN/L7B/A=
 			</data>
 			<key>requirement</key>
 			<string>identifier "PasteMine.debug" and anchor apple generic and certificate leaf[subject.CN] = "Apple Development: www.769833642@qq.com (3FX93NWD7S)" and certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */</string>
@@ -93,14 +93,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			y5zmqEhVeTts9a7wCj6SqIKWDrpR12O+2RAPfUox5ZI=
+			JdQ0fc7KD+kFiaOTcf/UtPSiIp1am3r+Eg/TrnMP91g=
 			</data>
 		</dict>
 		<key>Resources/6.wav</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			qy1t6cj7TN1Gq3iXuKTd+DGpbsFwwmRIRWxFeFlN8Rw=
+			u4cRATKisGrLQF8TLrNv0+hAOfNIvxs/uq0imqsyyzk=
 			</data>
 		</dict>
 		<key>Resources/Info.plist</key>
