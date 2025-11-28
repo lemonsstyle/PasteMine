@@ -199,18 +199,56 @@ struct OnboardingView: View {
     }
 
     private func requestNotificationPermission() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-            DispatchQueue.main.async {
-                withAnimation {
-                    notificationGranted = granted
-                }
+        print("🔔 开始请求通知权限...")
 
-                if granted {
-                    print("✅ 通知权限已授予")
-                } else if let error = error {
-                    print("❌ 通知权限请求失败: \(error)")
+        // 先检查当前权限状态
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            print("📊 当前通知权限状态: \(settings.authorizationStatus.rawValue)")
+
+            DispatchQueue.main.async {
+                if settings.authorizationStatus == .notDetermined {
+                    // 未决定，请求权限
+                    print("➡️ 权限未决定，发起请求...")
+                    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+                        DispatchQueue.main.async {
+                            if let error = error {
+                                print("❌ 通知权限请求失败: \(error.localizedDescription)")
+                            } else {
+                                print(granted ? "✅ 通知权限已授予" : "⚠️ 用户拒绝了通知权限")
+                            }
+
+                            withAnimation {
+                                self.notificationGranted = granted
+                            }
+                        }
+                    }
+                } else if settings.authorizationStatus == .authorized {
+                    // 已授权
+                    print("✅ 通知权限已授权")
+                    withAnimation {
+                        self.notificationGranted = true
+                    }
                 } else {
-                    print("⚠️ 通知权限被拒绝")
+                    // 被拒绝，提示用户去系统设置
+                    print("⚠️ 通知权限被拒绝，请在系统设置中手动开启")
+
+                    let alert = NSAlert()
+                    alert.messageText = "通知权限被拒绝"
+                    alert.informativeText = "请在系统设置 > 通知 > PasteMine 中手动开启通知权限"
+                    alert.addButton(withTitle: "打开系统设置")
+                    alert.addButton(withTitle: "取消")
+
+                    if alert.runModal() == .alertFirstButtonReturn {
+                        // 打开系统设置
+                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }
+
+                    // 即使被拒绝，也标记为已处理，让用户可以继续
+                    withAnimation {
+                        self.notificationGranted = true
+                    }
                 }
             }
         }
