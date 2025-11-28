@@ -12,6 +12,7 @@ class PasteService {
     static let shared = PasteService()
     
     weak var windowManager: WindowManager?
+    weak var clipboardMonitor: ClipboardMonitor?  // 引用 ClipboardMonitor
     private var currentPasteItem: ClipboardItem?
 
     private init() {}
@@ -20,6 +21,9 @@ class PasteService {
     func paste(item: ClipboardItem) {
         // 保存当前粘贴项（用于后续通知）
         self.currentPasteItem = item
+
+        // 设置粘贴标记，防止 ClipboardMonitor 发送重复通知
+        clipboardMonitor?.isPasting = true
 
         // 1. 根据类型复制到剪贴板
         let pasteboard = NSPasteboard.general
@@ -121,6 +125,9 @@ class PasteService {
             // 清理临时引用
             self.currentPasteItem = nil
         }
+
+        // 清除粘贴标记
+        clipboardMonitor?.isPasting = false
     }
 }
 

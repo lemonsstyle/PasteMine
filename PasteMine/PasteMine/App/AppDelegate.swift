@@ -27,7 +27,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // 配置 PasteService
         PasteService.shared.windowManager = windowManager
-        
+        PasteService.shared.clipboardMonitor = clipboardMonitor
+
         // 创建托盘图标
         setupStatusBar()
         
