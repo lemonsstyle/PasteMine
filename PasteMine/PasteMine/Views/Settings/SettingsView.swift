@@ -10,24 +10,26 @@ import SwiftUI
 struct SettingsView: View {
     @State private var settings = AppSettings.load()
     @Environment(\.dismiss) private var dismiss
-    
+
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text("设置")
-                    .font(.title2)
+                    .font(.title3)
+                    .fontWeight(.semibold)
                     .foregroundStyle(.primary)
+                    .padding(.bottom, 2)
 
                 // 通知设置
                 SettingsSectionView(title: "通知") {
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 3) {
                         Toggle("启用复制通知", isOn: $settings.notificationEnabled)
                             .onChange(of: settings.notificationEnabled) { _ in
                                 settings.save()
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
 
-                        Text("复制文本时显示系统通知（显示前50个字符）")
+                        Text("复制时显示通知(前50个字符)")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -36,7 +38,7 @@ struct SettingsView: View {
 
                 // 音效主题设置
                 SettingsSectionView(title: "音效主题") {
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 3) {
                         Picker("", selection: $settings.soundTheme) {
                             ForEach(AppSettings.soundThemeOptions, id: \.value) { option in
                                 Text(option.label).tag(option.value)
@@ -58,7 +60,7 @@ struct SettingsView: View {
 
                 // 历史记录数量设置
                 SettingsSectionView(title: "历史记录上限") {
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 3) {
                         Picker("", selection: $settings.maxHistoryCount) {
                             ForEach(AppSettings.historyCountOptions, id: \.self) { count in
                                 Text("\(count) 条").tag(count)
@@ -69,7 +71,7 @@ struct SettingsView: View {
                             settings.save()
                         }
 
-                        Text("超出上限时，自动删除最旧的记录")
+                        Text("超出上限时自动删除最旧记录")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
@@ -77,7 +79,7 @@ struct SettingsView: View {
 
                 // 保留时间设置
                 SettingsSectionView(title: "保留时间") {
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 3) {
                         Picker("", selection: $settings.retentionDays) {
                             ForEach(AppSettings.retentionDaysOptions, id: \.value) { option in
                                 Text(option.label).tag(option.value)
@@ -96,7 +98,7 @@ struct SettingsView: View {
 
                 // 图片大小限制设置
                 SettingsSectionView(title: "图片大小限制") {
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 3) {
                         Picker("", selection: $settings.maxImageSize) {
                             ForEach(AppSettings.imageSizeOptions, id: \.self) { size in
                                 Text("\(size) MB").tag(size)
@@ -107,7 +109,7 @@ struct SettingsView: View {
                             settings.save()
                         }
 
-                        Text("超过此大小的图片将不会保存")
+                        Text("超过此大小的图片不保存")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
@@ -115,14 +117,14 @@ struct SettingsView: View {
 
                 // 全局快捷键设置
                 SettingsSectionView(title: "全局快捷键") {
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 3) {
                         ShortcutRecorderView(shortcut: $settings.globalShortcut)
                             .onChange(of: settings.globalShortcut) { _ in
                                 settings.save()
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
 
-                        Text("用于显示/隐藏剪贴板历史窗口")
+                        Text("显示/隐藏剪贴板历史窗口")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -137,11 +139,11 @@ struct SettingsView: View {
                     .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.defaultAction)
                 }
-                .padding(.top, 8)
+                .padding(.top, 4)
             }
-            .padding(16)
+            .padding(12)
         }
-        .frame(width: 420, height: 650)
+        .frame(width: 420, height: 580)
         .background {
             if #available(macOS 14, *) {
                 Color.clear
@@ -151,10 +153,10 @@ struct SettingsView: View {
             }
         }
     }
-    
+
     private var retentionDescription: String {
         if settings.retentionDays == 0 {
-            return "历史记录将永久保存（直到手动删除或达到数量上限）"
+            return "历史记录将永久保存(直到手动删除或达到数量上限)"
         } else {
             return "超过 \(settings.retentionDays) 天的记录将被自动删除"
         }
@@ -173,24 +175,24 @@ struct SettingsSectionView<Content: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 5) {
             Text(title)
-                .font(.subheadline)
+                .font(.caption)
                 .fontWeight(.semibold)
                 .foregroundStyle(.primary)
 
             content
         }
-        .padding(12)
+        .padding(9)
         .background {
             if #available(macOS 14, *) {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 8)
                     .fill(.regularMaterial)
                     .shadow(color: .black.opacity(isHovered ? 0.15 : 0.08),
                             radius: isHovered ? 8 : 4,
                             y: isHovered ? 4 : 2)
             } else {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 8)
                     .fill(Color(NSColor.controlBackgroundColor))
             }
         }
@@ -205,4 +207,3 @@ struct SettingsSectionView<Content: View>: View {
 #Preview {
     SettingsView()
 }
-
