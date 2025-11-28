@@ -12,11 +12,15 @@ class PasteService {
     static let shared = PasteService()
     
     weak var windowManager: WindowManager?
-    
+    private var currentPasteItem: ClipboardItem?
+
     private init() {}
     
     /// 粘贴剪贴板项到活跃应用
     func paste(item: ClipboardItem) {
+        // 保存当前粘贴项（用于后续通知）
+        self.currentPasteItem = item
+
         // 1. 根据类型复制到剪贴板
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
@@ -101,6 +105,22 @@ class PasteService {
         keyUpEvent?.post(tap: .cghidEventTap)
         
         print("⌨️  已模拟 Cmd+V")
+
+        // 发送粘贴通知
+        if let item = self.currentPasteItem {
+            let isImage = item.itemType == .image
+            let notificationContent = item.itemType == .text
+                ? (item.content ?? "")
+                : "图片 \(item.imageWidth)×\(item.imageHeight)"
+
+            NotificationService.shared.sendPasteNotification(
+                content: notificationContent,
+                isImage: isImage
+            )
+
+            // 清理临时引用
+            self.currentPasteItem = nil
+        }
     }
 }
 
