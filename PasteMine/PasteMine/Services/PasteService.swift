@@ -126,8 +126,12 @@ class PasteService {
             self.currentPasteItem = nil
         }
 
-        // 清除粘贴标记
-        clipboardMonitor?.isPasting = false
+        // 延迟清除粘贴标记，确保 ClipboardMonitor 有足够时间检测到粘贴状态
+        // ClipboardMonitor 每 0.5 秒检查一次，所以延迟 0.6 秒清除标记
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            self.clipboardMonitor?.isPasting = false
+            print("✅ 已清除粘贴标记")
+        }
     }
 }
 

@@ -23,7 +23,7 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			NLy3zeIOsR8Dyl/3AcaEMUmBiyA=
+			NqGA1kiTP4JBFoX9ZPMTAJK51p8=
 			</data>
 			<key>requirement</key>
 			<string>identifier "PasteMine.debug" and anchor apple generic and certificate leaf[subject.CN] = "Apple Development: www.769833642@qq.com (3FX93NWD7S)" and certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */</string>
