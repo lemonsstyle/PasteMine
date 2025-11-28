@@ -56,6 +56,9 @@ class NotificationService {
                 print("✅ 通知已发送: \(truncated)")
             }
         }
+
+        // 播放复制音效
+        SoundService.shared.playCopySound()
     }
 
     /// 发送粘贴通知
@@ -88,6 +91,9 @@ class NotificationService {
                 print("✅ 粘贴通知已发送: \(truncated)")
             }
         }
+
+        // 播放粘贴音效
+        SoundService.shared.playPasteSound()
     }
 }
 

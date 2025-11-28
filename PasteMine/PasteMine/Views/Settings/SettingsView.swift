@@ -34,6 +34,28 @@ struct SettingsView: View {
                     }
                 }
 
+                // 音效主题设置
+                SettingsSectionView(title: "音效主题") {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Picker("", selection: $settings.soundTheme) {
+                            ForEach(AppSettings.soundThemeOptions, id: \.value) { option in
+                                Text(option.label).tag(option.value)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .onChange(of: settings.soundTheme) { _ in
+                            settings.save()
+                            // 试听音效
+                            SoundService.shared.playCopySound()
+                        }
+
+                        Text("选择复制和粘贴的音效组合")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+
                 // 历史记录数量设置
                 SettingsSectionView(title: "历史记录上限") {
                     VStack(alignment: .leading, spacing: 6) {

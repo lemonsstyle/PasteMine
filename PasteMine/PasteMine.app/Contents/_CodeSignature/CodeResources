@@ -4,6 +4,30 @@
 <dict>
 	<key>files</key>
 	<dict>
+		<key>Resources/1.wav</key>
+		<data>
+		gRDJiWqqFQXuFKCnQ+4poedOjR4=
+		</data>
+		<key>Resources/2.wav</key>
+		<data>
+		0Ug+pj9/7Dj6xzoC8FT26rD5PEM=
+		</data>
+		<key>Resources/3.wav</key>
+		<data>
+		PbPYiqIwpN5bqLI1v27I5M6askc=
+		</data>
+		<key>Resources/4.wav</key>
+		<data>
+		LsmdxePvtd+O2e18aeGFYcxLTu4=
+		</data>
+		<key>Resources/5.wav</key>
+		<data>
+		H1LRU1KyRlqZAyg40Y5lHiSRoUQ=
+		</data>
+		<key>Resources/6.wav</key>
+		<data>
+		OgKi0QC8GJHSQ81c/atAEWvCBSo=
+		</data>
 		<key>Resources/Info.plist</key>
 		<data>
 		4jGd8Jg6MZx79kZuKS2xxJ9EgvU=
@@ -23,7 +47,7 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			NqGA1kiTP4JBFoX9ZPMTAJK51p8=
+			guCutjQUeKsUGd8bhyc85xqAcfA=
 			</data>
 			<key>requirement</key>
 			<string>identifier "PasteMine.debug" and anchor apple generic and certificate leaf[subject.CN] = "Apple Development: www.769833642@qq.com (3FX93NWD7S)" and certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */</string>
@@ -36,6 +60,48 @@
 			</data>
 			<key>requirement</key>
 			<string>identifier "__preview" and anchor apple generic and certificate leaf[subject.CN] = "Apple Development: www.769833642@qq.com (3FX93NWD7S)" and certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */</string>
+		</dict>
+		<key>Resources/1.wav</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			CuHbSySUkFfTdNyhQm9l5A2IKedY9Qao5AsUwA8mYZc=
+			</data>
+		</dict>
+		<key>Resources/2.wav</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			hBHlzEk/gFTEIO19nkR4uQWFF+NXrzzR/kRVZU6iTAk=
+			</data>
+		</dict>
+		<key>Resources/3.wav</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			hi6UE6Gxwq7cRcuBEXEA9WwNVIqKw6fzGx/jrVEUF5k=
+			</data>
+		</dict>
+		<key>Resources/4.wav</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			cII4R2/vZyU2+WztBJ+5lYyY+UTzsNjuNgVbcaDbt7U=
+			</data>
+		</dict>
+		<key>Resources/5.wav</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			y5zmqEhVeTts9a7wCj6SqIKWDrpR12O+2RAPfUox5ZI=
+			</data>
+		</dict>
+		<key>Resources/6.wav</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			qy1t6cj7TN1Gq3iXuKTd+DGpbsFwwmRIRWxFeFlN8Rw=
+			</data>
 		</dict>
 		<key>Resources/Info.plist</key>
 		<dict>
