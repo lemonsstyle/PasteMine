@@ -129,6 +129,21 @@ struct SettingsView: View {
                     }
                 }
 
+                // 帮助与支持
+                SettingsSectionView(title: "帮助") {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Button("重新显示引导页面") {
+                            resetOnboarding()
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                        Text("如需重新设置权限或查看使用说明")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+
                 HStack {
                     Spacer()
                     Button("完成") {
@@ -157,6 +172,18 @@ struct SettingsView: View {
             return "历史记录将永久保存(直到手动删除或达到数量上限)"
         } else {
             return "超过 \(settings.retentionDays) 天的记录将被自动删除"
+        }
+    }
+
+    private func resetOnboarding() {
+        UserDefaults.standard.set(false, forKey: "hasCompletedOnboarding")
+        dismiss()
+
+        // 延迟显示引导页面
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            if let appDelegate = AppDelegate.shared {
+                appDelegate.showOnboarding()
+            }
         }
     }
 }
