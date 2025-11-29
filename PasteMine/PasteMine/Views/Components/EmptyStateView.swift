@@ -9,18 +9,27 @@ import SwiftUI
 
 struct EmptyStateView: View {
     let message: String
-    
+
     var body: some View {
         VStack(spacing: 16) {
             Image(systemName: "doc.on.clipboard")
                 .font(.system(size: 60))
-                .foregroundColor(.secondary)
-            
+                .foregroundStyle(.tertiary)
+                .symbolRenderingMode(.hierarchical)
+
             Text(message)
                 .font(.headline)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background {
+            if #available(macOS 14, *) {
+                Color.clear
+                    .background(.ultraThinMaterial.opacity(0.5))
+            } else {
+                Color.clear
+            }
+        }
     }
 }
 

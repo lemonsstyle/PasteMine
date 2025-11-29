@@ -7,22 +7,39 @@
 
 import SwiftUI
 import AppKit
+import UserNotifications
 
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
+    static var shared: AppDelegate?
+
     var statusItem: NSStatusItem?
     var clipboardMonitor = ClipboardMonitor()
     var hotKeyManager: HotKeyManager?
     var windowManager: WindowManager?
     
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // 设置全局访问点
+        AppDelegate.shared = self
+
+        // 设置通知中心代理
+        UNUserNotificationCenter.current().delegate = self
+
+        // 请求通知权限
+        NotificationService.shared.requestPermission()
+
+        // 同步开机自启动状态
+        let settings = AppSettings.load()
+        LaunchAtLoginService.shared.setLaunchAtLogin(enabled: settings.launchAtLogin)
+
         // 隐藏 Dock 图标（已在 Info.plist 设置 LSUIElement）
-        
+
         // 初始化窗口管理器
         windowManager = WindowManager()
         
         // 配置 PasteService
         PasteService.shared.windowManager = windowManager
-        
+        PasteService.shared.clipboardMonitor = clipboardMonitor
+
         // 创建托盘图标
         setupStatusBar()
         
@@ -117,6 +134,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         hotKeyManager?.register { [weak self] in
             self?.windowManager?.toggle()
         }
+    }
+
+    // MARK: - UNUserNotificationCenterDelegate
+
+    /// 在应用运行时也显示通知
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                               willPresent notification: UNNotification,
+                               withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        // 即使应用在前台运行，也显示通知
+        completionHandler([.banner, .sound])
     }
 }
 
