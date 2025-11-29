@@ -21,7 +21,7 @@ struct ShortcutRecorderView: View {
                 .font(.system(.body, design: .monospaced))
                 .frame(minWidth: 120)
                 .padding(.horizontal, 12)
-                .padding(.vertical, 6)
+                .padding(.vertical, 4)
                 .background(
                     RoundedRectangle(cornerRadius: 6)
                         .fill(isRecording ? Color.blue.opacity(0.1) : Color.gray.opacity(0.1))
