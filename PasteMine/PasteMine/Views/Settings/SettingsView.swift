@@ -113,20 +113,43 @@ struct SettingsView: View {
                     }
                 }
 
-                // 全局快捷键设置
-                SettingsSectionView(title: "全局快捷键") {
-                    VStack(alignment: .leading, spacing: 3) {
-                        ShortcutRecorderView(shortcut: $settings.globalShortcut)
-                            .onChange(of: settings.globalShortcut) { _ in
-                                settings.save()
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                // 全局快捷键和开机自启动设置（同一行）
+                HStack(spacing: 8) {
+                    // 全局快捷键（占据更多空间）
+                    SettingsSectionView(title: "全局快捷键") {
+                        VStack(alignment: .leading, spacing: 3) {
+                            ShortcutRecorderView(shortcut: $settings.globalShortcut)
+                                .onChange(of: settings.globalShortcut) { _ in
+                                    settings.save()
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
 
-                        Text("显示/隐藏剪贴板历史窗口")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                            Text("显示/隐藏剪贴板历史窗口")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
                     }
+                    .frame(minWidth: 240, idealWidth: 260, maxWidth: .infinity)
+
+                    // 开机自启动（固定较小宽度）
+                    SettingsSectionView(title: "开机自启动") {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Toggle("", isOn: $settings.launchAtLogin)
+                                .toggleStyle(.switch)
+                                .onChange(of: settings.launchAtLogin) { newValue in
+                                    settings.save()
+                                    LaunchAtLoginService.shared.setLaunchAtLogin(enabled: newValue)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
+                            Text("开机时自动启动应用")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                    .frame(width: 140)
                 }
 
                 HStack {

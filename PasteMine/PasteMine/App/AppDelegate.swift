@@ -27,6 +27,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         // 请求通知权限
         NotificationService.shared.requestPermission()
 
+        // 同步开机自启动状态
+        let settings = AppSettings.load()
+        LaunchAtLoginService.shared.setLaunchAtLogin(enabled: settings.launchAtLogin)
+
         // 隐藏 Dock 图标（已在 Info.plist 设置 LSUIElement）
 
         // 初始化窗口管理器
