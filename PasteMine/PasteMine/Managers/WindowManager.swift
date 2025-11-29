@@ -29,12 +29,22 @@ class WindowManager: NSObject {
             backing: .buffered,
             defer: false
         )
-        
+
         window?.title = "剪贴板历史"
         window?.contentView = NSHostingView(rootView: contentView)
         window?.isReleasedWhenClosed = false
         window?.level = .floating  // 窗口置顶
         window?.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+
+        // Add Liquid Glass window properties
+        if #available(macOS 14, *) {
+            window?.isOpaque = false
+            window?.backgroundColor = .clear
+            window?.titlebarAppearsTransparent = true
+            window?.toolbarStyle = .unified
+        } else {
+            window?.backgroundColor = NSColor.windowBackgroundColor
+        }
         
         // 设置代理以监听窗口事件
         window?.delegate = self

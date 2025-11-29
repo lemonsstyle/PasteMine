@@ -9,6 +9,8 @@ import Foundation
 
 struct AppSettings: Codable {
     var notificationEnabled: Bool = true
+    var soundEnabled: Bool = true  // 音效开关
+    var launchAtLogin: Bool = false  // 开机自启动
     var globalShortcut: KeyboardShortcut = .defaultShortcut  // 默认 ⌘⇧V
     var maxHistoryCount: Int = 50  // 默认 50 条
     var retentionDays: Int = 3      // 默认 3 天（0 = 永久）
