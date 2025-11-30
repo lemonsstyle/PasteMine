@@ -39,7 +39,7 @@ struct AppSettings: Codable {
     }
     
     /// 历史记录数量选项
-    static let historyCountOptions = [50, 100, 200]
+    static let historyCountOptions = [50, 200, 999]
     
     /// 保留天数选项（0 表示永久）
     static let retentionDaysOptions = [

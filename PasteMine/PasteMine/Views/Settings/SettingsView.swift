@@ -74,7 +74,7 @@ struct SettingsView: View {
                             VStack(alignment: .leading, spacing: 3) {
                                 Picker("", selection: $settings.maxHistoryCount) {
                                     ForEach(AppSettings.historyCountOptions, id: \.self) { count in
-                                        Text("\(count) 条").tag(count)
+                                        Text(count == 999 ? "永久" : "\(count) 条").tag(count)
                                     }
                                 }
                                 .pickerStyle(.segmented)
