@@ -32,14 +32,15 @@ class ImageStorageManager {
         guard let tiffData = image.tiffRepresentation else {
             throw NSError(domain: "ImageStorageManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "无法获取图片数据"])
         }
-        
-        // 检查图片大小
+
+        // 检查图片大小（20MB 限制）
         let settings = AppSettings.load()
-        let maxSize = Int64(settings.maxImageSize) * 1024 * 1024
-        if Int64(tiffData.count) > maxSize {
-            throw NSError(domain: "ImageStorageManager", code: 2, userInfo: [NSLocalizedDescriptionKey: "图片大小超过限制(\(settings.maxImageSize)MB)"])
+        let imageSizeMB = Double(tiffData.count) / 1024 / 1024
+
+        if settings.ignoreLargeImages && imageSizeMB > 20 {
+            throw NSError(domain: "ImageStorageManager", code: 2, userInfo: [NSLocalizedDescriptionKey: "图片大小超过 20MB 限制"])
         }
-        
+
         // 转换为 PNG 格式（统一格式，便于管理）
         guard let bitmapRep = NSBitmapImageRep(data: tiffData),
               let pngData = bitmapRep.representation(using: .png, properties: [:]) else {
