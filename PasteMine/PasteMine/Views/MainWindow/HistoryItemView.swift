@@ -91,9 +91,9 @@ struct HistoryItemView: View {
                 Button(action: {
                     onPinToggle?(item)
                 }) {
-                    Text(item.isPinned ? "📌" : "📌")
-                        .font(.body)
-                        .foregroundColor(item.isPinned ? .accentColor : .secondary)
+                    Text("📌")
+                        .font(.system(size: 14))
+                        .foregroundColor(item.isPinned ? .blue : .secondary)
                         .opacity((isHovered || item.isPinned) ? 1.0 : 0.0)
                 }
                 .buttonStyle(.plain)
@@ -126,6 +126,13 @@ struct HistoryItemView: View {
                         RoundedRectangle(cornerRadius: 10)
                             .fill(Color(NSColor.controlBackgroundColor).opacity(isSelected ? 0.7 : 0.5))
                     }
+                }
+            }
+            .overlay {
+                // 固定记录的浅蓝色边框
+                if item.isPinned {
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.blue.opacity(0.3), lineWidth: 1.5)
                 }
             }
             .onHover { hovering in
