@@ -12,166 +12,177 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("设置")
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.primary)
-                    .padding(.bottom, 2)
+        VStack(alignment: .leading, spacing: 0) {
+            // 标题区域
+            Text("设置")
+                .font(.title3)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 12)
 
-                // 通知和音效设置（同一行）
-                HStack(spacing: 8) {
-                    // 通知设置
-                    SettingsSectionView(title: "通知") {
-                        VStack(alignment: .leading, spacing: 3) {
-                            Toggle("", isOn: $settings.notificationEnabled)
-                                .toggleStyle(.switch)
-                                .onChange(of: settings.notificationEnabled) { _ in
-                                    settings.save()
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
+            Divider()
+                .padding(.horizontal, 16)
 
-                            Text("复制时显示通知(前50个字符)")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+            // 可滚动内容区域
+            ScrollView {
+                VStack(alignment: .leading, spacing: 10) {
+                    // 用户体验组
+                    HStack(spacing: 8) {
+                        SettingsSectionView(title: "通知") {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Toggle("", isOn: $settings.notificationEnabled)
+                                    .toggleStyle(.switch)
+                                    .onChange(of: settings.notificationEnabled) { _ in
+                                        settings.save()
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                Text("复制时显示通知")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
                         }
-                    }
-                    .frame(minWidth: 120, idealWidth: 140, maxWidth: .infinity)
+                        .frame(maxWidth: .infinity)
 
-                    // 音效设置
-                    SettingsSectionView(title: "音效") {
-                        VStack(alignment: .leading, spacing: 3) {
-                            Toggle("", isOn: $settings.soundEnabled)
-                                .toggleStyle(.switch)
-                                .onChange(of: settings.soundEnabled) { _ in
-                                    settings.save()
-                                    // 试听音效
-                                    if settings.soundEnabled {
-                                        SoundService.shared.playCopySound()
+                        SettingsSectionView(title: "音效") {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Toggle("", isOn: $settings.soundEnabled)
+                                    .toggleStyle(.switch)
+                                    .onChange(of: settings.soundEnabled) { _ in
+                                        settings.save()
+                                        if settings.soundEnabled {
+                                            SoundService.shared.playCopySound()
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                Text("播放提示音效")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+
+                    // 数据管理组
+                    HStack(spacing: 8) {
+                        SettingsSectionView(title: "历史记录上限") {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Picker("", selection: $settings.maxHistoryCount) {
+                                    ForEach(AppSettings.historyCountOptions, id: \.self) { count in
+                                        Text("\(count) 条").tag(count)
                                     }
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-
-                            Text("复制和粘贴时播放音效")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                    }
-                    .frame(minWidth: 120, idealWidth: 140, maxWidth: .infinity)
-                }
-
-                // 历史记录数量设置
-                SettingsSectionView(title: "历史记录上限") {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Picker("", selection: $settings.maxHistoryCount) {
-                            ForEach(AppSettings.historyCountOptions, id: \.self) { count in
-                                Text("\(count) 条").tag(count)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .onChange(of: settings.maxHistoryCount) { _ in
-                            settings.save()
-                        }
-
-                        Text("超出上限时自动删除最旧记录")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                // 保留时间设置
-                SettingsSectionView(title: "保留时间") {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Picker("", selection: $settings.retentionDays) {
-                            ForEach(AppSettings.retentionDaysOptions, id: \.value) { option in
-                                Text(option.label).tag(option.value)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .onChange(of: settings.retentionDays) { _ in
-                            settings.save()
-                        }
-
-                        Text(retentionDescription)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                // 图片大小限制设置
-                SettingsSectionView(title: "图片大小限制") {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Picker("", selection: $settings.maxImageSize) {
-                            ForEach(AppSettings.imageSizeOptions, id: \.self) { size in
-                                Text("\(size) MB").tag(size)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .onChange(of: settings.maxImageSize) { _ in
-                            settings.save()
-                        }
-
-                        Text("超过此大小的图片不保存")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                // 全局快捷键和开机自启动设置（同一行）
-                HStack(spacing: 8) {
-                    // 全局快捷键（占据更多空间）
-                    SettingsSectionView(title: "全局快捷键") {
-                        VStack(alignment: .leading, spacing: 3) {
-                            ShortcutRecorderView(shortcut: $settings.globalShortcut)
-                                .onChange(of: settings.globalShortcut) { _ in
+                                .pickerStyle(.segmented)
+                                .onChange(of: settings.maxHistoryCount) { _ in
                                     settings.save()
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
 
-                            Text("显示/隐藏剪贴板历史窗口")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                                Text("超出自动删除")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
-                    }
-                    .frame(minWidth: 240, idealWidth: 260, maxWidth: .infinity)
+                        .frame(maxWidth: .infinity)
 
-                    // 开机自启动（固定较小宽度）
-                    SettingsSectionView(title: "开机自启动") {
-                        VStack(alignment: .leading, spacing: 3) {
-                            Toggle("", isOn: $settings.launchAtLogin)
-                                .toggleStyle(.switch)
-                                .onChange(of: settings.launchAtLogin) { newValue in
-                                    settings.save()
-                                    LaunchAtLoginService.shared.setLaunchAtLogin(enabled: newValue)
+                        SettingsSectionView(title: "保留时间") {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Picker("", selection: $settings.retentionDays) {
+                                    ForEach(AppSettings.retentionDaysOptions, id: \.value) { option in
+                                        Text(option.label).tag(option.value)
+                                    }
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .pickerStyle(.segmented)
+                                .onChange(of: settings.retentionDays) { _ in
+                                    settings.save()
+                                }
 
-                            Text("开机时自动启动应用")
+                                Text(retentionDescription)
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+
+                    // 图片设置
+                    SettingsSectionView(title: "图片大小限制") {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Picker("", selection: $settings.maxImageSize) {
+                                ForEach(AppSettings.imageSizeOptions, id: \.self) { size in
+                                    Text("\(size) MB").tag(size)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .onChange(of: settings.maxImageSize) { _ in
+                                settings.save()
+                            }
+
+                            Text("超过此大小的图片不保存")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
-                    .frame(width: 140)
-                }
 
-                HStack {
-                    Spacer()
-                    Button("完成") {
-                        dismiss()
+                    // 系统集成组
+                    HStack(spacing: 8) {
+                        SettingsSectionView(title: "全局快捷键") {
+                            VStack(alignment: .leading, spacing: 3) {
+                                ShortcutRecorderView(shortcut: $settings.globalShortcut)
+                                    .onChange(of: settings.globalShortcut) { _ in
+                                        settings.save()
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                Text("显示/隐藏窗口")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+                        .frame(minWidth: 240, maxWidth: .infinity)
+
+                        SettingsSectionView(title: "开机自启动") {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Toggle("", isOn: $settings.launchAtLogin)
+                                    .toggleStyle(.switch)
+                                    .onChange(of: settings.launchAtLogin) { newValue in
+                                        settings.save()
+                                        LaunchAtLoginService.shared.setLaunchAtLogin(enabled: newValue)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                Text("自动启动应用")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+                        .frame(width: 140)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .keyboardShortcut(.defaultAction)
                 }
-                .padding(.top, 4)
+                .padding(16)
             }
-            .padding(12)
+
+            Divider()
+
+            // 底部按钮区域
+            HStack {
+                Spacer()
+                Button("完成") {
+                    dismiss()
+                }
+                .buttonStyle(.borderedProminent)
+                .keyboardShortcut(.defaultAction)
+            }
+            .padding(16)
         }
-        .frame(width: 420, height: 580)
+        .frame(width: 420, height: 500)
         .background {
             if #available(macOS 14, *) {
                 Color.clear
