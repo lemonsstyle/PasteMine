@@ -102,7 +102,7 @@ struct OnboardingView: View {
                 .padding(.bottom, 24)
             }
         }
-        .frame(width: 600, height: 550)
+        .frame(width: 500, height: 480)
         .onAppear {
             checkPermissions()
         }

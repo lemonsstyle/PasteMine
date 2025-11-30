@@ -87,7 +87,8 @@ class NotificationService {
                 ? String(content.prefix(50)) + "..."
                 : content
             notificationContent.body = truncated
-            notificationContent.sound = .default
+            // 不使用系统通知声音，使用自定义音效（避免双重声音）
+            notificationContent.sound = nil
 
             let request = UNNotificationRequest(
                 identifier: UUID().uuidString,
@@ -133,7 +134,8 @@ class NotificationService {
                 ? String(content.prefix(50)) + "..."
                 : content
             notificationContent.body = truncated
-            notificationContent.sound = .default
+            // 不使用系统通知声音，使用自定义音效（避免双重声音）
+            notificationContent.sound = nil
 
             let request = UNNotificationRequest(
                 identifier: UUID().uuidString,
