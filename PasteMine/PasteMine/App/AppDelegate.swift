@@ -16,6 +16,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     var clipboardMonitor = ClipboardMonitor()
     var hotKeyManager: HotKeyManager?
     var windowManager: WindowManager?
+    var onboardingWindow: NSWindow?
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         // 设置全局访问点
@@ -24,8 +25,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         // 设置通知中心代理
         UNUserNotificationCenter.current().delegate = self
 
-        // 请求通知权限
-        NotificationService.shared.requestPermission()
+        // 检查是否是首次启动
+        let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
+
+        if !hasCompletedOnboarding {
+            // 首次启动，显示引导界面
+            showOnboarding()
+        } else {
+            // 非首次启动，请求通知权限（如果还没授权的话）
+            NotificationService.shared.requestPermission()
+        }
 
         // 同步开机自启动状态
         let settings = AppSettings.load()
@@ -35,30 +44,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 
         // 初始化窗口管理器
         windowManager = WindowManager()
-        
+
         // 配置 PasteService
         PasteService.shared.windowManager = windowManager
         PasteService.shared.clipboardMonitor = clipboardMonitor
 
         // 创建托盘图标
         setupStatusBar()
-        
+
         // 注册全局快捷键
         setupHotKey()
 
         // 启动剪贴板监听
         clipboardMonitor.start()
-        
-        // 请求辅助功能权限（会自动弹出系统提示）
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            // 首次启动时，系统会自动弹出权限请求
-            NSApplication.shared.requestAccessibilityPermission()
-            
-            // 如果用户拒绝了，显示自定义提示
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                NSApplication.shared.checkAccessibilityPermission()
-            }
-        }
     }
     
     func applicationWillTerminate(_ notification: Notification) {
@@ -120,12 +118,50 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     }
     
     // MARK: - 全局快捷键设置
-    
+
     private func setupHotKey() {
         hotKeyManager = HotKeyManager()
         hotKeyManager?.register { [weak self] in
             self?.windowManager?.toggle()
         }
+    }
+
+    // MARK: - 引导界面
+
+    private func showOnboarding() {
+        let onboardingView = OnboardingView()
+            .onDisappear {
+                // 引导完成后，确保请求了必要的权限
+                NotificationService.shared.requestPermission()
+            }
+
+        let hostingController = NSHostingController(rootView: onboardingView)
+
+        onboardingWindow = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 600, height: 550),
+            styleMask: [.titled, .closable, .fullSizeContentView],
+            backing: .buffered,
+            defer: false
+        )
+
+        onboardingWindow?.center()
+        onboardingWindow?.contentViewController = hostingController
+        onboardingWindow?.title = "欢迎使用 PasteMine"
+        onboardingWindow?.titlebarAppearsTransparent = true
+        onboardingWindow?.isMovableByWindowBackground = true
+        onboardingWindow?.level = .floating
+
+        // 监听窗口关闭
+        NotificationCenter.default.addObserver(
+            forName: NSWindow.willCloseNotification,
+            object: onboardingWindow,
+            queue: .main
+        ) { [weak self] _ in
+            self?.onboardingWindow = nil
+        }
+
+        onboardingWindow?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     // MARK: - UNUserNotificationCenterDelegate
