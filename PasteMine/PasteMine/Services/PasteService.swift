@@ -36,9 +36,16 @@ class PasteService {
                 print("📋 已复制文本到剪贴板: \(content.prefix(50))...")
             }
         case .image:
-            if let image = item.image {
+            // 使用原始数据粘贴（保持原画质）
+            if let rawData = item.imageRawData,
+               let pasteboardType = item.pasteboardType {
+                pasteboard.setData(rawData, forType: pasteboardType)
+                let formatText = item.imageFormat?.uppercased() ?? "IMAGE"
+                print("🖼️  已复制图片到剪贴板（原画质，格式：\(formatText)）: \(item.imageWidth)×\(item.imageHeight)")
+            } else if let image = item.image {
+                // 降级处理：如果无法获取原始数据，使用 NSImage（画质可能下降）
                 pasteboard.writeObjects([image])
-                print("🖼️  已复制图片到剪贴板: \(item.imageWidth)×\(item.imageHeight)")
+                print("⚠️  使用 NSImage 复制图片（可能损失画质）: \(item.imageWidth)×\(item.imageHeight)")
             }
         }
         

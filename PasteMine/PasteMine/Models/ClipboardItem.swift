@@ -26,29 +26,65 @@ public class ClipboardItem: NSManagedObject, Identifiable {
     @NSManaged public var imagePath: String?  // 图片文件路径
     @NSManaged public var imageWidth: Int32  // 图片宽度
     @NSManaged public var imageHeight: Int32  // 图片高度
-    
+
     /// 获取类型枚举
     var itemType: ClipboardItemType {
         ClipboardItemType(rawValue: type ?? "text") ?? .text
     }
-    
-    /// 获取图片对象（如果是图片类型）
-    var image: NSImage? {
-        guard itemType == .image,
-              let imagePath = imagePath,
-              let imageData = try? Data(contentsOf: URL(fileURLWithPath: imagePath)) else {
+
+    /// 从文件路径推断图片格式
+    var imageFormat: String? {
+        guard itemType == .image, let path = imagePath else {
             return nil
         }
-        return NSImage(data: imageData)
+        let ext = (path as NSString).pathExtension.lowercased()
+        return ext.isEmpty ? "png" : ext
     }
-    
+
+    /// 获取图片格式的 PasteboardType
+    var pasteboardType: NSPasteboard.PasteboardType? {
+        guard let format = imageFormat else {
+            return nil
+        }
+
+        switch format {
+        case "png":
+            return .png
+        case "tiff", "tif":
+            return .tiff
+        case "pdf":
+            return .pdf
+        default:
+            return .png  // 默认 PNG
+        }
+    }
+
+    /// 获取图片原始数据（用于粘贴）
+    var imageRawData: Data? {
+        guard itemType == .image,
+              let imagePath = imagePath,
+              let data = try? Data(contentsOf: URL(fileURLWithPath: imagePath)) else {
+            return nil
+        }
+        return data
+    }
+
+    /// 获取图片对象（如果是图片类型，仅用于显示）
+    var image: NSImage? {
+        guard let data = imageRawData else {
+            return nil
+        }
+        return NSImage(data: data)
+    }
+
     /// 获取显示文本
     var displayText: String {
         switch itemType {
         case .text:
             return content ?? ""
         case .image:
-            return "[\(imageWidth) × \(imageHeight) 图片]"
+            let formatText = imageFormat?.uppercased() ?? "IMAGE"
+            return "[\(imageWidth) × \(imageHeight) \(formatText)]"
         }
     }
 }

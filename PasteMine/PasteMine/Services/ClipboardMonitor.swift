@@ -61,8 +61,11 @@ class ClipboardMonitor {
         }
 
         // 优先检查图片（因为有些应用复制图片时也会同时复制文本）
-        if let image = getImageFromPasteboard() {
-            handleImage(image)
+        // 检查是否有图片数据
+        if pasteboard.data(forType: .png) != nil ||
+           pasteboard.data(forType: .tiff) != nil ||
+           pasteboard.data(forType: .pdf) != nil {
+            handleImage()
             return
         }
         
@@ -98,47 +101,67 @@ class ClipboardMonitor {
     }
     
     /// 处理图片内容
-    private func handleImage(_ image: NSImage) {
-        guard let imageData = image.tiffRepresentation else {
-            print("❌ 无法获取图片数据")
-            return
+    private func handleImage() {
+        // 尝试多种图片类型，保存原始数据
+        let imageTypes: [NSPasteboard.PasteboardType] = [
+            .png, .tiff, .pdf
+        ]
+
+        for type in imageTypes {
+            if let imageData = pasteboard.data(forType: type) {
+                // 使用原始数据的哈希值
+                let hash = HashUtility.sha256Data(imageData)
+
+                // 与上次内容相同，跳过
+                guard hash != lastHash else { return }
+
+                lastHash = hash
+                latestContent = nil  // 图片不设置 latestContent
+
+                // 保存原始数据到数据库（保持原画质）
+                do {
+                    let appSource = getCurrentApp()
+                    try DatabaseService.shared.insertImageItemRawData(data: imageData, type: type, appSource: appSource)
+
+                    // 获取图片尺寸用于通知
+                    var sizeText = ""
+                    if let image = NSImage(data: imageData) {
+                        sizeText = "\(Int(image.size.width))×\(Int(image.size.height))"
+                    } else {
+                        sizeText = "未知尺寸"
+                    }
+
+                    // 发送通知
+                    let formatText = type == .png ? "PNG" : type == .tiff ? "TIFF" : "PDF"
+                    NotificationService.shared.sendClipboardNotification(content: "\(formatText) 图片 (\(sizeText))", isImage: true)
+
+                    print("✅ 已保存 \(formatText) 格式图片（原画质）")
+                } catch {
+                    print("❌ 保存图片失败: \(error)")
+                }
+
+                return
+            }
         }
-        
-        let hash = HashUtility.sha256Data(imageData)
-        
-        // 与上次内容相同，跳过
-        guard hash != lastHash else { return }
-        
-        lastHash = hash
-        latestContent = nil  // 图片不设置 latestContent
-        
-        // 保存到数据库
-        do {
-            let appSource = getCurrentApp()
-            try DatabaseService.shared.insertImageItem(image: image, appSource: appSource)
-            
-            // 发送通知
-            let size = "\(Int(image.size.width))×\(Int(image.size.height))"
-            NotificationService.shared.sendClipboardNotification(content: "图片 (\(size))", isImage: true)
-        } catch {
-            print("❌ 保存图片失败: \(error)")
-        }
+
+        print("📋 剪贴板中没有支持的图片格式")
     }
-    
-    /// 从剪贴板获取图片
+
+    /// 从剪贴板获取图片（已弃用，仅用于兼容）
+    @available(*, deprecated, message: "使用 handleImage() 直接处理原始数据")
     private func getImageFromPasteboard() -> NSImage? {
         // 尝试多种图片类型
         let imageTypes: [NSPasteboard.PasteboardType] = [
             .png, .tiff, .pdf
         ]
-        
+
         for type in imageTypes {
             if let imageData = pasteboard.data(forType: type),
                let image = NSImage(data: imageData) {
                 return image
             }
         }
-        
+
         return nil
     }
     
@@ -149,12 +172,15 @@ class ClipboardMonitor {
 
     /// 更新 lastHash（用于粘贴操作时跳过通知但更新状态）
     private func updateLastHash() {
-        // 优先检查图片
-        if let image = getImageFromPasteboard(), let imageData = image.tiffRepresentation {
-            lastHash = HashUtility.sha256Data(imageData)
-            latestContent = nil
-            print("🖼️  已更新图片 hash")
-            return
+        // 优先检查图片（使用原始数据）
+        let imageTypes: [NSPasteboard.PasteboardType] = [.png, .tiff, .pdf]
+        for type in imageTypes {
+            if let imageData = pasteboard.data(forType: type) {
+                lastHash = HashUtility.sha256Data(imageData)
+                latestContent = nil
+                print("🖼️  已更新图片 hash（格式：\(type == .png ? "PNG" : type == .tiff ? "TIFF" : "PDF")）")
+                return
+            }
         }
 
         // 其次检查文本

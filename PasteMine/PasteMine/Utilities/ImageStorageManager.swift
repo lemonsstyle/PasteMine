@@ -26,48 +26,78 @@ class ImageStorageManager {
         print("📁 图片存储目录: \(storageDirectory.path)")
     }
     
-    /// 保存图片并返回文件路径
+    /// 保存图片原始数据并返回文件路径（保持原画质）
+    /// - Parameters:
+    ///   - data: 图片的原始二进制数据
+    ///   - type: 图片的原始格式类型（如 .png, .tiff, .pdf）
+    /// - Returns: (路径, 哈希值, 宽度, 高度, 格式)
+    func saveImageRawData(_ data: Data, type: NSPasteboard.PasteboardType) throws -> (path: String, hash: String, width: Int, height: Int, format: String) {
+        // 检查图片大小
+        let settings = AppSettings.load()
+        let maxSize = Int64(settings.maxImageSize) * 1024 * 1024
+        if Int64(data.count) > maxSize {
+            throw NSError(domain: "ImageStorageManager", code: 2, userInfo: [NSLocalizedDescriptionKey: "图片大小超过限制(\(settings.maxImageSize)MB)"])
+        }
+
+        // 计算哈希值
+        let hash = SHA256.hash(data: data)
+        let hashString = hash.compactMap { String(format: "%02x", $0) }.joined()
+
+        // 确定文件扩展名（保持原始格式）
+        let fileExtension: String
+        let formatString: String
+        switch type {
+        case .png:
+            fileExtension = "png"
+            formatString = "png"
+        case .tiff:
+            fileExtension = "tiff"
+            formatString = "tiff"
+        case .pdf:
+            fileExtension = "pdf"
+            formatString = "pdf"
+        default:
+            // 默认使用 png
+            fileExtension = "png"
+            formatString = "png"
+        }
+
+        // 使用哈希值作为文件名
+        let fileName = "\(hashString).\(fileExtension)"
+        let fileURL = storageDirectory.appendingPathComponent(fileName)
+
+        // 获取图片尺寸（用于显示）
+        var width = 0
+        var height = 0
+        if let image = NSImage(data: data),
+           let representation = image.representations.first {
+            // 使用实际像素尺寸，而非 points
+            width = representation.pixelsWide
+            height = representation.pixelsHigh
+        }
+
+        // 如果文件已存在，直接返回（去重）
+        if FileManager.default.fileExists(atPath: fileURL.path) {
+            print("📸 图片已存在，跳过保存: \(fileName)")
+        } else {
+            // 保存原始数据（无损）
+            try data.write(to: fileURL)
+            print("✅ 图片已保存（原画质）: \(fileName) (\(ByteCountFormatter.string(fromByteCount: Int64(data.count), countStyle: .file)))")
+        }
+
+        return (path: fileURL.path, hash: hashString, width: width, height: height, format: formatString)
+    }
+
+    /// 保存图片并返回文件路径（兼容旧接口，已弃用）
+    @available(*, deprecated, message: "使用 saveImageRawData(_:type:) 保持原画质")
     func saveImage(_ image: NSImage) throws -> (path: String, hash: String, width: Int, height: Int) {
         // 获取图片的 TIFF 表示
         guard let tiffData = image.tiffRepresentation else {
             throw NSError(domain: "ImageStorageManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "无法获取图片数据"])
         }
-        
-        // 检查图片大小
-        let settings = AppSettings.load()
-        let maxSize = Int64(settings.maxImageSize) * 1024 * 1024
-        if Int64(tiffData.count) > maxSize {
-            throw NSError(domain: "ImageStorageManager", code: 2, userInfo: [NSLocalizedDescriptionKey: "图片大小超过限制(\(settings.maxImageSize)MB)"])
-        }
-        
-        // 转换为 PNG 格式（统一格式，便于管理）
-        guard let bitmapRep = NSBitmapImageRep(data: tiffData),
-              let pngData = bitmapRep.representation(using: .png, properties: [:]) else {
-            throw NSError(domain: "ImageStorageManager", code: 3, userInfo: [NSLocalizedDescriptionKey: "无法转换图片格式"])
-        }
-        
-        // 计算哈希值
-        let hash = SHA256.hash(data: pngData)
-        let hashString = hash.compactMap { String(format: "%02x", $0) }.joined()
-        
-        // 使用哈希值作为文件名
-        let fileName = "\(hashString).png"
-        let fileURL = storageDirectory.appendingPathComponent(fileName)
-        
-        // 如果文件已存在，直接返回（去重）
-        if FileManager.default.fileExists(atPath: fileURL.path) {
-            print("📸 图片已存在，跳过保存: \(fileName)")
-        } else {
-            // 保存图片
-            try pngData.write(to: fileURL)
-            print("✅ 图片已保存: \(fileName) (\(ByteCountFormatter.string(fromByteCount: Int64(pngData.count), countStyle: .file)))")
-        }
-        
-        // 获取图片尺寸
-        let width = Int(image.size.width)
-        let height = Int(image.size.height)
-        
-        return (path: fileURL.path, hash: hashString, width: width, height: height)
+
+        let result = try saveImageRawData(tiffData, type: .tiff)
+        return (path: result.path, hash: result.hash, width: result.width, height: result.height)
     }
     
     /// 删除图片文件

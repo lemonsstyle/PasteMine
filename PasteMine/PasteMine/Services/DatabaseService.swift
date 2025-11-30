@@ -58,17 +58,17 @@ class DatabaseService {
         try trimToLimit()
     }
     
-    /// 插入图片记录
-    func insertImageItem(image: NSImage, appSource: String? = nil) throws {
-        // 保存图片到文件系统
-        let result = try ImageStorageManager.shared.saveImage(image)
-        
+    /// 插入图片记录（使用原始数据，保持原画质）
+    func insertImageItemRawData(data: Data, type: NSPasteboard.PasteboardType, appSource: String? = nil) throws {
+        // 保存图片原始数据到文件系统
+        let result = try ImageStorageManager.shared.saveImageRawData(data, type: type)
+
         // 检查是否已存在
         if try hashExists(result.hash) {
             print("🖼️  图片已存在，跳过")
             return
         }
-        
+
         let item = ClipboardItem(context: context)
         item.id = UUID()
         item.type = ClipboardItemType.image.rawValue
@@ -79,10 +79,41 @@ class DatabaseService {
         item.imageHeight = Int32(result.height)
         item.createdAt = Date()
         item.appSource = appSource
-        
+
+        try context.save()
+        print("✅ 新图片已保存（原画质，格式：\(result.format.uppercased())）: \(result.width)×\(result.height)")
+
+        // 自动清理
+        try cleanExpiredItems()
+        try trimToLimit()
+    }
+
+    /// 插入图片记录（兼容旧接口，已弃用）
+    @available(*, deprecated, message: "使用 insertImageItemRawData(_:type:appSource:) 保持原画质")
+    func insertImageItem(image: NSImage, appSource: String? = nil) throws {
+        // 保存图片到文件系统
+        let result = try ImageStorageManager.shared.saveImage(image)
+
+        // 检查是否已存在
+        if try hashExists(result.hash) {
+            print("🖼️  图片已存在，跳过")
+            return
+        }
+
+        let item = ClipboardItem(context: context)
+        item.id = UUID()
+        item.type = ClipboardItemType.image.rawValue
+        item.content = nil
+        item.contentHash = result.hash
+        item.imagePath = result.path
+        item.imageWidth = Int32(result.width)
+        item.imageHeight = Int32(result.height)
+        item.createdAt = Date()
+        item.appSource = appSource
+
         try context.save()
         print("✅ 新图片已保存: \(result.width)×\(result.height)")
-        
+
         // 自动清理
         try cleanExpiredItems()
         try trimToLimit()
