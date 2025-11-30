@@ -17,24 +17,42 @@ class NotificationService {
     
     /// 请求通知权限
     func requestPermission() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
-            if let error = error {
-                print("❌ 请求通知权限时出错: \(error.localizedDescription)")
-                return
-            }
+        // 先检查当前权限状态
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            print("📊 当前通知权限状态: \(settings.authorizationStatus.rawValue)")
+            print("   - 0: notDetermined (未请求)")
+            print("   - 1: denied (已拒绝)")
+            print("   - 2: authorized (已授权)")
 
-            if granted {
-                print("✅ 通知权限已授予")
-                // 再次检查详细设置
-                UNUserNotificationCenter.current().getNotificationSettings { settings in
-                    print("📊 通知详细设置:")
-                    print("   授权状态: \(settings.authorizationStatus.rawValue)")
-                    print("   警报样式: \(settings.alertSetting.rawValue)")
-                    print("   声音设置: \(settings.soundSetting.rawValue)")
+            // 如果还未请求过权限，则请求
+            if settings.authorizationStatus == .notDetermined {
+                print("🔔 首次启动，正在请求通知权限...")
+
+                UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+                    if let error = error {
+                        print("❌ 请求通知权限时出错: \(error.localizedDescription)")
+                        return
+                    }
+
+                    if granted {
+                        print("✅ 通知权限已授予")
+                        // 再次检查详细设置
+                        UNUserNotificationCenter.current().getNotificationSettings { newSettings in
+                            print("📊 通知详细设置:")
+                            print("   授权状态: \(newSettings.authorizationStatus.rawValue)")
+                            print("   警报样式: \(newSettings.alertSetting.rawValue)")
+                            print("   声音设置: \(newSettings.soundSetting.rawValue)")
+                        }
+                    } else {
+                        print("⚠️  通知权限被拒绝")
+                        print("   请在系统设置中手动开启: 系统设置 > 通知 > PasteMine")
+                    }
                 }
-            } else {
-                print("⚠️  通知权限被拒绝")
+            } else if settings.authorizationStatus == .denied {
+                print("⚠️  通知权限已被拒绝")
                 print("   请在系统设置中手动开启: 系统设置 > 通知 > PasteMine")
+            } else if settings.authorizationStatus == .authorized {
+                print("✅ 通知权限已授权")
             }
         }
     }
