@@ -13,7 +13,6 @@ struct AppSettings: Codable {
     var launchAtLogin: Bool = false  // 开机自启动
     var globalShortcut: KeyboardShortcut = .defaultShortcut  // 默认 ⌘⇧V
     var maxHistoryCount: Int = 50  // 默认 50 条
-    var retentionDays: Int = 3      // 默认 3 天（0 = 永久）
     var maxImageSize: Int = 10      // 默认 10MB
     
     // 存储到 UserDefaults
@@ -40,14 +39,7 @@ struct AppSettings: Codable {
     
     /// 历史记录数量选项
     static let historyCountOptions = [50, 200, 999]
-    
-    /// 保留天数选项（0 表示永久）
-    static let retentionDaysOptions = [
-        (value: 3, label: "3 天"),
-        (value: 7, label: "7 天"),
-        (value: 0, label: "永久")
-    ]
-    
+
     /// 图片大小限制选项（MB）
     static let imageSizeOptions = [5, 10, 20]
 }

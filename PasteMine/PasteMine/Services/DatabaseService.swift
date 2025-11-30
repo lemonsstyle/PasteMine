@@ -52,9 +52,8 @@ class DatabaseService {
         
         try context.save()
         print("✅ 新文本已保存: \(content.prefix(50))...")
-        
+
         // 自动清理
-        try cleanExpiredItems()
         try trimToLimit()
     }
     
@@ -84,7 +83,6 @@ class DatabaseService {
         print("✅ 新图片已保存（原画质，格式：\(result.format.uppercased())）: \(result.width)×\(result.height)")
 
         // 自动清理
-        try cleanExpiredItems()
         try trimToLimit()
     }
 
@@ -115,7 +113,6 @@ class DatabaseService {
         print("✅ 新图片已保存: \(result.width)×\(result.height)")
 
         // 自动清理
-        try cleanExpiredItems()
         try trimToLimit()
     }
     
@@ -164,39 +161,7 @@ class DatabaseService {
         try context.save()
         print("🗑️  已清空所有历史记录")
     }
-    
-    /// 清理过期记录（根据设置中的保留天数）
-    private func cleanExpiredItems() throws {
-        let settings = AppSettings.load()
-        
-        // retentionDays = 0 表示永久保存
-        guard settings.retentionDays > 0 else { return }
-        
-        // 计算过期日期
-        let calendar = Calendar.current
-        guard let expirationDate = calendar.date(byAdding: .day, value: -settings.retentionDays, to: Date()) else {
-            return
-        }
-        
-        // 查询过期的记录
-        let request = ClipboardItem.fetchRequest()
-        request.predicate = NSPredicate(format: "createdAt < %@", expirationDate as NSDate)
-        
-        let expiredItems = try context.fetch(request)
-        
-        if !expiredItems.isEmpty {
-            // 删除图片文件
-            for item in expiredItems {
-                if item.itemType == .image, let imagePath = item.imagePath {
-                    ImageStorageManager.shared.deleteImage(at: imagePath)
-                }
-                context.delete(item)
-            }
-            try context.save()
-            print("🗑️  已清理 \(expiredItems.count) 条过期记录（超过 \(settings.retentionDays) 天）")
-        }
-    }
-    
+
     /// 限制记录数量（根据设置中的数量上限）
     private func trimToLimit() throws {
         let settings = AppSettings.load()

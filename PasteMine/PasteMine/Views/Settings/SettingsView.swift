@@ -69,46 +69,24 @@ struct SettingsView: View {
                     }
 
                     // 数据管理组
-                    HStack(spacing: 8) {
-                        SettingsSectionView(title: "历史记录上限") {
-                            VStack(alignment: .leading, spacing: 3) {
-                                Picker("", selection: $settings.maxHistoryCount) {
-                                    ForEach(AppSettings.historyCountOptions, id: \.self) { count in
-                                        Text(count == 999 ? "永久" : "\(count) 条").tag(count)
-                                    }
+                    SettingsSectionView(title: "历史记录上限") {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Picker("", selection: $settings.maxHistoryCount) {
+                                ForEach(AppSettings.historyCountOptions, id: \.self) { count in
+                                    Text(count == 999 ? "永久" : "\(count) 条").tag(count)
                                 }
-                                .pickerStyle(.segmented)
-                                .onChange(of: settings.maxHistoryCount) { _ in
-                                    settings.save()
-                                }
-
-                                Text("超出自动删除")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
                             }
-                        }
-                        .frame(maxWidth: .infinity)
-
-                        SettingsSectionView(title: "保留时间") {
-                            VStack(alignment: .leading, spacing: 3) {
-                                Picker("", selection: $settings.retentionDays) {
-                                    ForEach(AppSettings.retentionDaysOptions, id: \.value) { option in
-                                        Text(option.label).tag(option.value)
-                                    }
-                                }
-                                .pickerStyle(.segmented)
-                                .onChange(of: settings.retentionDays) { _ in
-                                    settings.save()
-                                }
-
-                                Text(retentionDescription)
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
+                            .pickerStyle(.segmented)
+                            .onChange(of: settings.maxHistoryCount) { _ in
+                                settings.save()
                             }
+
+                            Text("超出自动删除")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
                         }
-                        .frame(maxWidth: .infinity)
                     }
+                    .frame(maxWidth: 320)
 
                     // 图片设置
                     SettingsSectionView(title: "图片大小限制") {
@@ -190,14 +168,6 @@ struct SettingsView: View {
             } else {
                 Color(NSColor.windowBackgroundColor)
             }
-        }
-    }
-
-    private var retentionDescription: String {
-        if settings.retentionDays == 0 {
-            return "历史记录将永久保存(直到手动删除或达到数量上限)"
-        } else {
-            return "超过 \(settings.retentionDays) 天的记录将被自动删除"
         }
     }
 }
