@@ -45,15 +45,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         
         // 注册全局快捷键
         setupHotKey()
-        
-        // 启动时清空历史
-        do {
-            try DatabaseService.shared.clearAll()
-            print("🗑️  启动时已清空历史记录")
-        } catch {
-            print("❌ 清空历史失败: \(error)")
-        }
-        
+
         // 启动剪贴板监听
         clipboardMonitor.start()
         
