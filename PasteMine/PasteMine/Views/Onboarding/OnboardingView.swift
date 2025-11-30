@@ -42,55 +42,54 @@ struct OnboardingView: View {
                 .padding(.bottom, 32)
 
                 // 步骤内容
-                TabView(selection: $currentStep) {
-                    // 步骤 1: 通知权限
-                    PermissionStepView(
-                        icon: "bell.fill",
-                        iconColor: .blue,
-                        title: "开启通知",
-                        description: "接收剪贴板复制和粘贴提醒",
-                        isGranted: $notificationPermissionGranted,
-                        primaryButtonTitle: "授予权限",
-                        primaryAction: {
-                            requestNotificationPermission()
-                        },
-                        secondaryButtonTitle: "稍后设置",
-                        secondaryAction: {
-                            currentStep = 1
-                        }
-                    )
-                    .tag(0)
-
-                    // 步骤 2: 辅助功能权限
-                    PermissionStepView(
-                        icon: "hand.point.up.left.fill",
-                        iconColor: .green,
-                        title: "开启辅助功能",
-                        description: "允许 PasteMine 实现自动粘贴功能",
-                        isGranted: $accessibilityPermissionGranted,
-                        primaryButtonTitle: "打开系统设置",
-                        primaryAction: {
-                            openAccessibilitySettings()
-                        },
-                        secondaryButtonTitle: "稍后设置",
-                        secondaryAction: {
-                            currentStep = 2
-                        }
-                    )
-                    .tag(1)
-
-                    // 步骤 3: 完成
-                    CompletionStepView(
-                        notificationGranted: notificationPermissionGranted,
-                        accessibilityGranted: accessibilityPermissionGranted,
-                        onComplete: {
-                            completeOnboarding()
-                        }
-                    )
-                    .tag(2)
+                VStack(spacing: 20) {
+                    if currentStep == 0 {
+                        // 步骤 1: 通知权限
+                        PermissionStepView(
+                            icon: "bell.fill",
+                            iconColor: .blue,
+                            title: "开启通知",
+                            description: "接收剪贴板复制和粘贴提醒",
+                            isGranted: $notificationPermissionGranted,
+                            primaryButtonTitle: "授予权限",
+                            primaryAction: {
+                                requestNotificationPermission()
+                            },
+                            secondaryButtonTitle: "稍后设置",
+                            secondaryAction: {
+                                currentStep = 1
+                            }
+                        )
+                    } else if currentStep == 1 {
+                        // 步骤 2: 辅助功能权限
+                        PermissionStepView(
+                            icon: "hand.point.up.left.fill",
+                            iconColor: .green,
+                            title: "开启辅助功能",
+                            description: "允许 PasteMine 实现自动粘贴功能",
+                            isGranted: $accessibilityPermissionGranted,
+                            primaryButtonTitle: "打开系统设置",
+                            primaryAction: {
+                                openAccessibilitySettings()
+                            },
+                            secondaryButtonTitle: "稍后设置",
+                            secondaryAction: {
+                                currentStep = 2
+                            }
+                        )
+                    } else {
+                        // 步骤 3: 完成
+                        CompletionStepView(
+                            notificationGranted: notificationPermissionGranted,
+                            accessibilityGranted: accessibilityPermissionGranted,
+                            onComplete: {
+                                completeOnboarding()
+                            }
+                        )
+                    }
                 }
-                .tabViewStyle(.page)
                 .frame(height: 400)
+                .animation(.easeInOut, value: currentStep)
 
                 // 底部指示器
                 HStack(spacing: 8) {
@@ -242,18 +241,20 @@ struct PermissionStepView: View {
                         Text(primaryButtonTitle)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
+                            .background(Color.accentColor)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
                 }
 
                 Button(action: secondaryAction) {
                     Text(isGranted ? "下一步" : secondaryButtonTitle)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
+                        .background(isGranted ? Color.accentColor : Color.clear)
+                        .foregroundColor(isGranted ? .white : .primary)
+                        .cornerRadius(8)
                 }
-                .buttonStyle(isGranted ? .borderedProminent : .bordered)
-                .controlSize(.large)
             }
             .padding(.horizontal, 48)
         }
@@ -333,9 +334,10 @@ struct CompletionStepView: View {
                 Text("开始使用")
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
+                    .background(Color.accentColor)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
             .padding(.horizontal, 48)
         }
     }
@@ -366,19 +368,6 @@ struct PermissionStatusRow: View {
                 .font(.caption)
                 .foregroundStyle(isGranted ? .green : .orange)
         }
-    }
-}
-
-// 辅助功能权限检查扩展
-extension NSApplication {
-    func isAccessibilityPermissionGranted() -> Bool {
-        let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: false]
-        return AXIsProcessTrustedWithOptions(options)
-    }
-
-    func requestAccessibilityPermission() {
-        let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
-        _ = AXIsProcessTrustedWithOptions(options)
     }
 }
 

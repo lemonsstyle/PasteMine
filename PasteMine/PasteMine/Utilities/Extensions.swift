@@ -48,5 +48,10 @@ extension NSApplication {
         let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
         let _ = AXIsProcessTrustedWithOptions(options)
     }
+
+    /// 检查是否已授予辅助功能权限（不弹窗）
+    func isAccessibilityPermissionGranted() -> Bool {
+        return hasAccessibilityPermission
+    }
 }
 
