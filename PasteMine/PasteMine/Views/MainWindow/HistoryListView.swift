@@ -26,10 +26,12 @@ struct HistoryListView: View {
     @Binding var showSettings: Bool
 
     var filteredItems: [ClipboardItem] {
+        var items: [ClipboardItem]
+
         if searchText.isEmpty {
-            return Array(items)
+            items = Array(self.items)
         } else {
-            return items.filter {
+            items = self.items.filter {
                 // 文本：搜索内容
                 if $0.itemType == .text {
                     return ($0.content ?? "").localizedCaseInsensitiveContains(searchText)
@@ -42,6 +44,21 @@ struct HistoryListView: View {
                     return appMatch || keywordMatch
                 }
                 return false
+            }
+        }
+
+        // 排序：固定的项目在前，按固定时间降序；未固定的按创建时间降序
+        return items.sorted { item1, item2 in
+            if item1.isPinned && !item2.isPinned {
+                return true  // item1 固定，item2 未固定 -> item1 在前
+            } else if !item1.isPinned && item2.isPinned {
+                return false  // item1 未固定，item2 固定 -> item2 在前
+            } else if item1.isPinned && item2.isPinned {
+                // 两个都固定，按固定时间降序（后固定的在前）
+                return (item1.pinnedAt ?? Date.distantPast) > (item2.pinnedAt ?? Date.distantPast)
+            } else {
+                // 两个都未固定，按创建时间降序
+                return (item1.createdAt ?? Date.distantPast) > (item2.createdAt ?? Date.distantPast)
             }
         }
     }
@@ -63,13 +80,22 @@ struct HistoryListView: View {
                             .id("top")
 
                         ForEach(Array(filteredItems.enumerated()), id: \.element.id) { index, item in
-                            HistoryItemView(item: item, isSelected: index == selectedIndex)
+                            HistoryItemView(
+                                item: item,
+                                isSelected: index == selectedIndex,
+                                onPinToggle: { item in
+                                    togglePin(item)
+                                }
+                            )
                                 .id(item.id)
                                 .onTapGesture {
                                     selectedIndex = index
                                     pasteItem(item)
                                 }
                                 .contextMenu {
+                                    Button(item.isPinned ? "取消固定" : "固定") {
+                                        togglePin(item)
+                                    }
                                     Button("删除") {
                                         deleteItem(item)
                                     }
@@ -159,6 +185,25 @@ struct HistoryListView: View {
         // 调整选中索引
         if selectedIndex >= filteredItems.count - 1 && selectedIndex > 0 {
             selectedIndex -= 1
+        }
+    }
+
+    private func togglePin(_ item: ClipboardItem) {
+        withAnimation(.easeOut(duration: 0.2)) {
+            item.isPinned.toggle()
+            if item.isPinned {
+                item.pinnedAt = Date()  // 设置固定时间
+            } else {
+                item.pinnedAt = nil  // 清除固定时间
+            }
+
+            // 保存到 Core Data
+            do {
+                try viewContext.save()
+                print("📌 \(item.isPinned ? "固定" : "取消固定")项目")
+            } catch {
+                print("❌ 保存失败: \(error)")
+            }
         }
     }
 

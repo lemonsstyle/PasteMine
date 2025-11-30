@@ -26,6 +26,8 @@ public class ClipboardItem: NSManagedObject, Identifiable {
     @NSManaged public var imagePath: String?  // 图片文件路径
     @NSManaged public var imageWidth: Int32  // 图片宽度
     @NSManaged public var imageHeight: Int32  // 图片高度
+    @NSManaged public var isPinned: Bool  // 是否固定
+    @NSManaged public var pinnedAt: Date?  // 固定时间
 
     /// 获取类型枚举
     var itemType: ClipboardItemType {

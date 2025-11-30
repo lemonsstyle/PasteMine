@@ -11,6 +11,7 @@ struct HistoryItemView: View {
     let item: ClipboardItem
     var isSelected: Bool = false
     @State private var isHovered = false
+    var onPinToggle: ((ClipboardItem) -> Void)?
 
     private var displayContent: String {
         switch item.itemType {
@@ -85,6 +86,18 @@ struct HistoryItemView: View {
                 }
 
                 Spacer()
+
+                // Pin 按钮
+                Button(action: {
+                    onPinToggle?(item)
+                }) {
+                    Text(item.isPinned ? "📌" : "📌")
+                        .font(.body)
+                        .foregroundColor(item.isPinned ? .accentColor : .secondary)
+                        .opacity((isHovered || item.isPinned) ? 1.0 : 0.0)
+                }
+                .buttonStyle(.plain)
+                .help(item.isPinned ? "取消固定" : "固定")
             }
             .padding(.vertical, 12)
             .padding(.horizontal, 12)
