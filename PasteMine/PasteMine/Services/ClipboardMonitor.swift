@@ -103,20 +103,33 @@ class ClipboardMonitor {
             print("❌ 无法获取图片数据")
             return
         }
-        
+
         let hash = HashUtility.sha256Data(imageData)
-        
+
         // 与上次内容相同，跳过
         guard hash != lastHash else { return }
-        
+
         lastHash = hash
         latestContent = nil  // 图片不设置 latestContent
-        
+
+        // 检查图片大小限制
+        let settings = AppSettings.load()
+        let imageSizeMB = Double(imageData.count) / 1024 / 1024
+
+        if settings.ignoreLargeImages && imageSizeMB > 20 {
+            print("⚠️ 图片大小 \(String(format: "%.2f", imageSizeMB))MB 超过 20MB，已跳过保存")
+            NotificationService.shared.sendClipboardNotification(
+                content: "图片过大 (\(String(format: "%.1f", imageSizeMB))MB)，未保存",
+                isImage: true
+            )
+            return
+        }
+
         // 保存到数据库
         do {
             let appSource = getCurrentApp()
             try DatabaseService.shared.insertImageItem(image: image, appSource: appSource)
-            
+
             // 发送通知
             let size = "\(Int(image.size.width))×\(Int(image.size.height))"
             NotificationService.shared.sendClipboardNotification(content: "图片 (\(size))", isImage: true)
