@@ -10,7 +10,8 @@ import Combine
 
 class ClipboardMonitor {
     var latestContent: String?
-    
+    var isPasting: Bool = false  // 标记是否正在执行粘贴操作
+
     private var timer: Timer?
     private var lastChangeCount: Int
     private var lastHash: String = ""
@@ -49,9 +50,16 @@ class ClipboardMonitor {
     /// 检查剪贴板变化
     private func checkClipboard() {
         guard pasteboard.changeCount != lastChangeCount else { return }
-        
+
         lastChangeCount = pasteboard.changeCount
-        
+
+        // 如果正在执行粘贴操作，跳过通知但更新 hash
+        if isPasting {
+            print("📋 检测到粘贴操作，跳过复制通知")
+            updateLastHash()
+            return
+        }
+
         // 优先检查图片（因为有些应用复制图片时也会同时复制文本）
         if let image = getImageFromPasteboard() {
             handleImage(image)
@@ -137,6 +145,25 @@ class ClipboardMonitor {
     /// 获取当前活跃应用名称
     private func getCurrentApp() -> String? {
         NSWorkspace.shared.frontmostApplication?.localizedName
+    }
+
+    /// 更新 lastHash（用于粘贴操作时跳过通知但更新状态）
+    private func updateLastHash() {
+        // 优先检查图片
+        if let image = getImageFromPasteboard(), let imageData = image.tiffRepresentation {
+            lastHash = HashUtility.sha256Data(imageData)
+            latestContent = nil
+            print("🖼️  已更新图片 hash")
+            return
+        }
+
+        // 其次检查文本
+        if let content = pasteboard.string(forType: .string), !content.isEmpty {
+            lastHash = HashUtility.sha256(content)
+            latestContent = content
+            print("📋 已更新文本 hash")
+            return
+        }
     }
 }
 

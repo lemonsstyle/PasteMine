@@ -12,11 +12,19 @@ class PasteService {
     static let shared = PasteService()
     
     weak var windowManager: WindowManager?
-    
+    weak var clipboardMonitor: ClipboardMonitor?  // 引用 ClipboardMonitor
+    private var currentPasteItem: ClipboardItem?
+
     private init() {}
     
     /// 粘贴剪贴板项到活跃应用
     func paste(item: ClipboardItem) {
+        // 保存当前粘贴项（用于后续通知）
+        self.currentPasteItem = item
+
+        // 设置粘贴标记，防止 ClipboardMonitor 发送重复通知
+        clipboardMonitor?.isPasting = true
+
         // 1. 根据类型复制到剪贴板
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
@@ -101,6 +109,29 @@ class PasteService {
         keyUpEvent?.post(tap: .cghidEventTap)
         
         print("⌨️  已模拟 Cmd+V")
+
+        // 发送粘贴通知
+        if let item = self.currentPasteItem {
+            let isImage = item.itemType == .image
+            let notificationContent = item.itemType == .text
+                ? (item.content ?? "")
+                : "图片 \(item.imageWidth)×\(item.imageHeight)"
+
+            NotificationService.shared.sendPasteNotification(
+                content: notificationContent,
+                isImage: isImage
+            )
+
+            // 清理临时引用
+            self.currentPasteItem = nil
+        }
+
+        // 延迟清除粘贴标记，确保 ClipboardMonitor 有足够时间检测到粘贴状态
+        // ClipboardMonitor 每 0.5 秒检查一次，所以延迟 0.6 秒清除标记
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            self.clipboardMonitor?.isPasting = false
+            print("✅ 已清除粘贴标记")
+        }
     }
 }
 
