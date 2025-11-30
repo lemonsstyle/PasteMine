@@ -58,6 +58,7 @@ iOSInjectionProject/
 build_dmg/
 dmg_contents/
 
-# 可选：保留最终的 DMG（如果不想提交，取消注释）
-# *.dmg
+# 排除构建产物
+*.dmg
+*.app
 
