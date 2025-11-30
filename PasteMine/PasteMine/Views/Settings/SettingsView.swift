@@ -89,23 +89,22 @@ struct SettingsView: View {
                     .frame(maxWidth: 320)
 
                     // 图片设置
-                    SettingsSectionView(title: "图片大小限制") {
+                    SettingsSectionView(title: "忽略大图片以节省磁盘空间") {
                         VStack(alignment: .leading, spacing: 3) {
-                            Picker("", selection: $settings.maxImageSize) {
-                                ForEach(AppSettings.imageSizeOptions, id: \.self) { size in
-                                    Text("\(size) MB").tag(size)
+                            Toggle("", isOn: $settings.ignoreLargeImages)
+                                .toggleStyle(.switch)
+                                .onChange(of: settings.ignoreLargeImages) { _ in
+                                    settings.save()
                                 }
-                            }
-                            .pickerStyle(.segmented)
-                            .onChange(of: settings.maxImageSize) { _ in
-                                settings.save()
-                            }
+                                .frame(maxWidth: .infinity, alignment: .leading)
 
-                            Text("超过此大小的图片不保存")
+                            Text("超过 20MB 的图片将不会被保存到历史中")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
+                    .frame(maxWidth: 320)
 
                     // 系统集成组
                     HStack(spacing: 8) {

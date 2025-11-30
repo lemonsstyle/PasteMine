@@ -32,11 +32,13 @@ class ImageStorageManager {
     ///   - type: 图片的原始格式类型（如 .png, .tiff, .pdf）
     /// - Returns: (路径, 哈希值, 宽度, 高度, 格式)
     func saveImageRawData(_ data: Data, type: NSPasteboard.PasteboardType) throws -> (path: String, hash: String, width: Int, height: Int, format: String) {
-        // 检查图片大小
+        // 检查图片大小（如果启用了忽略大图片功能）
         let settings = AppSettings.load()
-        let maxSize = Int64(settings.maxImageSize) * 1024 * 1024
-        if Int64(data.count) > maxSize {
-            throw NSError(domain: "ImageStorageManager", code: 2, userInfo: [NSLocalizedDescriptionKey: "图片大小超过限制(\(settings.maxImageSize)MB)"])
+        if settings.ignoreLargeImages {
+            let maxSize = Int64(AppSettings.largeImageThreshold) * 1024 * 1024  // 20MB
+            if Int64(data.count) > maxSize {
+                throw NSError(domain: "ImageStorageManager", code: 2, userInfo: [NSLocalizedDescriptionKey: "图片大小超过 20MB，已跳过"])
+            }
         }
 
         // 计算哈希值

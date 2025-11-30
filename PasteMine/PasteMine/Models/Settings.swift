@@ -13,7 +13,7 @@ struct AppSettings: Codable {
     var launchAtLogin: Bool = false  // 开机自启动
     var globalShortcut: KeyboardShortcut = .defaultShortcut  // 默认 ⌘⇧V
     var maxHistoryCount: Int = 50  // 默认 50 条
-    var maxImageSize: Int = 10      // 默认 10MB
+    var ignoreLargeImages: Bool = false  // 是否忽略大图片（>20MB）
     
     // 存储到 UserDefaults
     static let key = "app_settings"
@@ -36,11 +36,11 @@ struct AppSettings: Codable {
         // 通知快捷键已更改
         NotificationCenter.default.post(name: .shortcutDidChange, object: nil)
     }
-    
+
     /// 历史记录数量选项
     static let historyCountOptions = [50, 200, 999]
 
-    /// 图片大小限制选项（MB）
-    static let imageSizeOptions = [5, 10, 20]
+    /// 大图片阈值（20MB）
+    static let largeImageThreshold = 20
 }
 
