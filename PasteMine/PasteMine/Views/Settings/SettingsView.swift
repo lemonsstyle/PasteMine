@@ -63,6 +63,7 @@ struct SettingsView: View {
                             RoundedRectangle(cornerRadius: 8)
                                 .fill(selectedGroup == group ? Color.accentColor.opacity(0.1) : Color.clear)
                         )
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 }
