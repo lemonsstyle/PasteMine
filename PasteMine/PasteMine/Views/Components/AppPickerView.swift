@@ -20,7 +20,7 @@ struct AppPickerView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 4) {
                     if apps.isEmpty {
-                        Text("列表为空")
+                        Text(AppText.Settings.Privacy.emptyList)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .center)
@@ -51,7 +51,7 @@ struct AppPickerView: View {
                                         .foregroundStyle(.secondary)
                                 }
                                 .buttonStyle(.plain)
-                                .help("删除")
+                                .help(AppText.Common.delete)
                             }
                             .padding(.horizontal, 8)
                             .padding(.vertical, 6)
@@ -77,7 +77,7 @@ struct AppPickerView: View {
                 }) {
                     HStack {
                         Image(systemName: "plus.circle")
-                        Text("选择应用")
+                        Text(AppText.Settings.Privacy.selectApp)
                     }
                     .font(.caption)
                     .foregroundStyle(Color.accentColor)

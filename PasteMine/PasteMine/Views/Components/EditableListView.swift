@@ -23,7 +23,7 @@ struct EditableListView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 4) {
                     if items.isEmpty {
-                        Text("列表为空")
+                        Text(AppText.Settings.Privacy.emptyList)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .center)
@@ -48,7 +48,7 @@ struct EditableListView: View {
                                         .foregroundStyle(.secondary)
                                 }
                                 .buttonStyle(.plain)
-                                .help("删除")
+                                .help(AppText.Common.delete)
                             }
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
@@ -110,11 +110,11 @@ struct EditableListView: View {
                             isAdding = true
                             isInputFocused = true
                         }
-                    }) {
-                        HStack {
-                            Image(systemName: "plus.circle")
-                            Text("添加")
-                        }
+                }) {
+                    HStack {
+                        Image(systemName: "plus.circle")
+                        Text(AppText.Settings.Privacy.addType)
+                    }
                         .font(.caption)
                         .foregroundStyle(Color.accentColor)
                     }

@@ -44,7 +44,7 @@ struct SettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // 标题区域
-            Text("设置")
+            Text(AppText.Settings.title)
                 .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundStyle(.primary)
@@ -108,7 +108,7 @@ struct SettingsView: View {
             // 底部按钮区域
             HStack {
                 Spacer()
-                Button("完成") {
+                Button(AppText.Settings.doneButton) {
                     dismiss()
                 }
                 .buttonStyle(.borderedProminent)
@@ -130,10 +130,10 @@ struct SettingsView: View {
     // 通用设置
     @ViewBuilder
     private var generalSettings: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 5) {
             SettingsSectionView(title: "") {
                 HStack(spacing: 12) {
-                    Text("通知")
+                    Text(AppText.Settings.General.notification)
                         .font(.body)
                         .foregroundStyle(.primary)
                     
@@ -146,7 +146,7 @@ struct SettingsView: View {
                         }
                 }
                 
-                Text("复制时显示通知")
+                Text(AppText.Settings.General.notificationDesc)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .padding(.top, 1)
@@ -154,7 +154,7 @@ struct SettingsView: View {
 
             SettingsSectionView(title: "") {
                 HStack(spacing: 12) {
-                    Text("音效")
+                    Text(AppText.Settings.General.sound)
                         .font(.body)
                         .foregroundStyle(.primary)
                     
@@ -170,7 +170,7 @@ struct SettingsView: View {
                         }
                 }
                 
-                Text("播放提示音效")
+                Text(AppText.Settings.General.soundDesc)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .padding(.top, 1)
@@ -178,9 +178,9 @@ struct SettingsView: View {
         }
 
         SettingsSectionView(title: "") {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 4) {
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("全局快捷键")
+                    Text(AppText.Settings.General.globalShortcut)
                         .font(.subheadline)
                         .foregroundStyle(.primary)
                     
@@ -189,16 +189,16 @@ struct SettingsView: View {
                             settings.save()
                         }
                     
-                    Text("显示/隐藏窗口")
+                    Text(AppText.Settings.General.globalShortcutDesc)
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
                 
                 Divider()
-                    .padding(.vertical, 2)
+                    .padding(.vertical, 1)
                 
                 HStack(spacing: 12) {
-                    Text("开机自启动")
+                    Text(AppText.Settings.General.launchAtLogin)
                         .font(.subheadline)
                         .foregroundStyle(.primary)
                     
@@ -212,7 +212,7 @@ struct SettingsView: View {
                         }
                 }
                 
-                Text("自动启动应用")
+                Text(AppText.Settings.General.launchAtLoginDesc)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .padding(.top, 1)
@@ -225,13 +225,13 @@ struct SettingsView: View {
     private var storageSettings: some View {
         SettingsSectionView(title: "") {
             VStack(alignment: .leading, spacing: 3) {
-                Text("历史记录上限")
+                Text(AppText.Settings.Storage.historyLimit)
                     .font(.body)
                     .foregroundStyle(.primary)
                 
                 Picker("", selection: $settings.maxHistoryCount) {
                     ForEach(AppSettings.historyCountOptions, id: \.self) { count in
-                        Text(count == 999 ? "永久" : "\(count) 条").tag(count)
+                        Text(count == 999 ? AppText.Settings.Storage.historyPermanent : AppText.Settings.Storage.historyCount(count)).tag(count)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -239,7 +239,7 @@ struct SettingsView: View {
                     settings.save()
                 }
 
-                Text("超出自动删除")
+                Text(AppText.Settings.Storage.historyLimitDesc)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
@@ -247,7 +247,7 @@ struct SettingsView: View {
 
         SettingsSectionView(title: "") {
             HStack(spacing: 12) {
-                Text("忽略大图片以节省磁盘空间")
+                Text(AppText.Settings.Storage.ignoreLargeImages)
                     .font(.body)
                     .foregroundStyle(.primary)
                 
@@ -260,7 +260,7 @@ struct SettingsView: View {
                     }
             }
             
-            Text("超过 20MB 的图片将不会被保存到历史中")
+            Text(AppText.Settings.Storage.ignoreLargeImagesDesc)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .padding(.top, 1)
@@ -326,8 +326,8 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 8) {
             AppPickerView(
                 apps: $settings.ignoredApps,
-                title: "应用列表",
-                helpText: "这些应用中的复制操作不会被记录"
+                title: AppText.Settings.Privacy.typeListTitle,
+                helpText: AppText.Settings.Privacy.ignoreAppsDesc
             )
             .onChange(of: settings.ignoredApps) { _ in
                 settings.save()
@@ -342,9 +342,9 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 8) {
             EditableListView(
                 items: $settings.ignoredPasteboardTypes,
-                title: "类型列表",
-                placeholder: "输入 pasteboard type",
-                helpText: "这些类型的内容不会被记录（如密码、临时数据）"
+                title: AppText.Settings.Privacy.typeListTitle,
+                placeholder: AppText.Settings.Privacy.typePlaceholder,
+                helpText: AppText.Settings.Privacy.ignoreTypesDesc
             )
             .onChange(of: settings.ignoredPasteboardTypes) { _ in
                 settings.save()
@@ -358,7 +358,7 @@ struct SettingsView: View {
     private var clearOnQuitSection: some View {
         SettingsSectionView(title: "") {
             HStack(spacing: 12) {
-                Text("退出时清空剪贴板")
+                Text(AppText.Settings.Privacy.clearOnQuit)
                     .font(.subheadline)
                     .foregroundStyle(.primary)
                 
@@ -371,12 +371,11 @@ struct SettingsView: View {
                     }
             }
             
-            Text("退出应用时自动清除所有历史记录")
+            Text(AppText.Settings.Privacy.clearOnQuitDesc)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .padding(.top, 1)
         }
-        .frame(maxWidth: 320)
     }
 }
 
