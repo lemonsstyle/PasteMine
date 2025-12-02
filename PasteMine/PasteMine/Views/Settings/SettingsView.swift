@@ -249,7 +249,7 @@ struct SettingsView: View {
     // 隐私设置
     @ViewBuilder
     private var privacySettings: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             // 子分组选择器
             HStack(spacing: 8) {
                 ForEach(PrivacySubGroup.allCases, id: \.self) { subGroup in
@@ -288,13 +288,14 @@ struct SettingsView: View {
                     }
                 }
             }
-            .frame(height: 200)
+            .frame(height: 150)
             
             Divider()
-                .padding(.vertical, 4)
+                .padding(.vertical, 2)
             
             // 底部：退出时清空开关（始终显示）
             clearOnQuitSection
+                .padding(.top, 2)
         }
     }
     

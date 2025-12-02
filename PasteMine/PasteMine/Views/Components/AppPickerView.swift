@@ -26,18 +26,17 @@ struct AppPickerView: View {
                             .padding(.vertical, 20)
                     } else {
                         ForEach(apps) { app in
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(app.displayName)
-                                        .font(.caption)
-                                        .foregroundStyle(.primary)
-                                        .lineLimit(1)
-                                    
-                                    Text(app.bundleId)
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(1)
-                                }
+                            HStack(spacing: 8) {
+                                appIcon(for: app)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 20, height: 20)
+                                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                                
+                                Text(app.displayName)
+                                    .font(.caption)
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(1)
                                 
                                 Spacer()
                                 
@@ -64,7 +63,7 @@ struct AppPickerView: View {
                 }
                 .padding(4)
             }
-            .frame(maxHeight: 120)
+            .frame(maxHeight: 96)
             .background(
                 RoundedRectangle(cornerRadius: 6)
                     .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
@@ -149,6 +148,24 @@ struct AppPickerView: View {
             print("⚠️  应用已存在: \(displayName)")
         }
     }
+    
+    private func appIcon(for app: IgnoredApp) -> Image {
+        if let icon = iconCache[app.bundleId] {
+            return icon
+        }
+        
+        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: app.bundleId) {
+            let iconImage = NSWorkspace.shared.icon(forFile: url.path)
+            iconImage.size = NSSize(width: 20, height: 20)
+            let image = Image(nsImage: iconImage)
+            iconCache[app.bundleId] = image
+            return image
+        }
+        
+        return Image(systemName: "app")
+    }
+    
+    @State private var iconCache: [String: Image] = [:]
 }
 
 #Preview {
