@@ -106,6 +106,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     }
     
     @objc private func quit() {
+        // 检查是否需要清空历史记录
+        let settings = AppSettings.load()
+        if settings.clearOnQuit {
+            do {
+                try DatabaseService.shared.clearAll()
+                print("✅ 已清空所有历史记录（退出时清空功能）")
+            } catch {
+                print("❌ 清空历史记录失败: \(error)")
+            }
+        }
+        
         NSApplication.shared.terminate(nil)
     }
     

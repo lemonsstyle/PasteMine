@@ -22,9 +22,23 @@ enum SettingsGroup: String, CaseIterable {
     }
 }
 
+// 隐私子分组枚举
+enum PrivacySubGroup: String, CaseIterable {
+    case apps = "忽略应用"
+    case types = "忽略类型"
+    
+    var icon: String {
+        switch self {
+        case .apps: return "app.badge.fill"
+        case .types: return "doc.text.fill"
+        }
+    }
+}
+
 struct SettingsView: View {
     @State private var settings = AppSettings.load()
     @State private var selectedGroup: SettingsGroup = .general
+    @State private var selectedPrivacySubGroup: PrivacySubGroup = .apps
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -232,25 +246,120 @@ struct SettingsView: View {
         .frame(maxWidth: 320)
     }
 
-    // 隐私设置（暂时为空）
+    // 隐私设置
     @ViewBuilder
     private var privacySettings: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "lock.shield")
-                .font(.system(size: 48))
-                .foregroundStyle(.secondary)
-                .padding(.top, 40)
-
-            Text("隐私设置")
-                .font(.headline)
-                .foregroundStyle(.primary)
-
-            Text("即将推出更多隐私保护功能")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 12) {
+            // 子分组选择器
+            HStack(spacing: 8) {
+                ForEach(PrivacySubGroup.allCases, id: \.self) { subGroup in
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selectedPrivacySubGroup = subGroup
+                        }
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: subGroup.icon)
+                                .font(.caption)
+                            Text(subGroup.rawValue)
+                                .font(.caption)
+                        }
+                        .foregroundColor(selectedPrivacySubGroup == subGroup ? .white : .secondary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(selectedPrivacySubGroup == subGroup ? Color.accentColor : Color.secondary.opacity(0.1))
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.bottom, 4)
+            
+            // 子分组内容区域
+            ScrollView {
+                VStack(alignment: .leading, spacing: 10) {
+                    switch selectedPrivacySubGroup {
+                    case .apps:
+                        appsSubGroup
+                    case .types:
+                        typesSubGroup
+                    }
+                }
+            }
+            .frame(height: 200)
+            
+            Divider()
+                .padding(.vertical, 4)
+            
+            // 底部：退出时清空开关（始终显示）
+            clearOnQuitSection
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 40)
+    }
+    
+    // 忽略应用子分组
+    @ViewBuilder
+    private var appsSubGroup: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            AppPickerView(
+                apps: $settings.ignoredApps,
+                title: "应用列表"
+            )
+            .onChange(of: settings.ignoredApps) { _ in
+                settings.save()
+            }
+            
+            Text("这些应用中的复制操作不会被记录")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 4)
+        }
+        .padding(8)
+    }
+    
+    // 忽略类型子分组
+    @ViewBuilder
+    private var typesSubGroup: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            EditableListView(
+                items: $settings.ignoredPasteboardTypes,
+                title: "类型列表",
+                placeholder: "输入 pasteboard type"
+            )
+            .onChange(of: settings.ignoredPasteboardTypes) { _ in
+                settings.save()
+            }
+            
+            Text("这些类型的内容不会被记录（如密码、临时数据）")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 4)
+        }
+        .padding(8)
+    }
+    
+    // 退出时清空部分（始终显示在底部）
+    @ViewBuilder
+    private var clearOnQuitSection: some View {
+        SettingsSectionView(title: "退出时清空剪贴板") {
+            VStack(alignment: .leading, spacing: 3) {
+                Toggle("", isOn: $settings.clearOnQuit)
+                    .toggleStyle(.switch)
+                    .onChange(of: settings.clearOnQuit) { _ in
+                        settings.save()
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Text("退出应用时自动清除所有历史记录")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .frame(maxWidth: 320)
     }
 }
 

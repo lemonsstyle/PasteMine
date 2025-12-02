@@ -85,12 +85,25 @@ class ClipboardMonitor {
         // 与上次内容相同，跳过
         guard hash != lastHash else { return }
         
+        // 检查应用是否在忽略列表中
+        if shouldIgnoreCurrentApp() {
+            lastHash = hash
+            return
+        }
+        
+        // 检查剪贴板类型
+        if shouldIgnorePasteboardTypes() {
+            print("⏭️  已忽略敏感类型")
+            lastHash = hash
+            return
+        }
+        
         lastHash = hash
         latestContent = content
         
         // 保存到数据库
         do {
-            let appSource = getCurrentApp()
+            let appSource = getCurrentApp().displayName
             try DatabaseService.shared.insertTextItem(content: content, appSource: appSource)
             
             // 发送通知
@@ -115,12 +128,25 @@ class ClipboardMonitor {
                 // 与上次内容相同，跳过
                 guard hash != lastHash else { return }
 
+                // 检查应用是否在忽略列表中
+                if shouldIgnoreCurrentApp() {
+                    lastHash = hash
+                    return
+                }
+                
+                // 检查剪贴板类型
+                if shouldIgnorePasteboardTypes() {
+                    print("⏭️  已忽略敏感类型")
+                    lastHash = hash
+                    return
+                }
+
                 lastHash = hash
                 latestContent = nil  // 图片不设置 latestContent
 
                 // 保存原始数据到数据库（保持原画质）
                 do {
-                    let appSource = getCurrentApp()
+                    let appSource = getCurrentApp().displayName
                     try DatabaseService.shared.insertImageItemRawData(data: imageData, type: type, appSource: appSource)
 
                     // 获取图片尺寸用于通知
@@ -165,9 +191,31 @@ class ClipboardMonitor {
         return nil
     }
     
-    /// 获取当前活跃应用名称
-    private func getCurrentApp() -> String? {
-        NSWorkspace.shared.frontmostApplication?.localizedName
+    /// 获取当前活跃应用信息 (Bundle ID, 显示名称)
+    private func getCurrentApp() -> (bundleId: String?, displayName: String?) {
+        guard let app = NSWorkspace.shared.frontmostApplication else {
+            return (nil, nil)
+        }
+        return (app.bundleIdentifier, app.localizedName)
+    }
+    
+    /// 检查当前应用是否应该被忽略
+    private func shouldIgnoreCurrentApp() -> Bool {
+        let settings = AppSettings.load()
+        let currentApp = getCurrentApp()
+        
+        guard let bundleId = currentApp.bundleId else {
+            return false
+        }
+        
+        // 通过 Bundle ID 匹配
+        let isIgnored = settings.ignoredApps.contains { $0.bundleId == bundleId }
+        
+        if isIgnored {
+            print("⏭️  已忽略应用: \(currentApp.displayName ?? bundleId) (\(bundleId))")
+        }
+        
+        return isIgnored
     }
 
     /// 更新 lastHash（用于粘贴操作时跳过通知但更新状态）
@@ -190,6 +238,19 @@ class ClipboardMonitor {
             print("📋 已更新文本 hash")
             return
         }
+    }
+    
+    /// 检查剪贴板类型是否应该被忽略
+    private func shouldIgnorePasteboardTypes() -> Bool {
+        let settings = AppSettings.load()
+        let types = pasteboard.types ?? []
+        
+        for type in types {
+            if settings.ignoredPasteboardTypes.contains(type.rawValue) {
+                return true
+            }
+        }
+        return false
     }
 }
 
