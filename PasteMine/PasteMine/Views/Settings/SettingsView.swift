@@ -305,17 +305,12 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 8) {
             AppPickerView(
                 apps: $settings.ignoredApps,
-                title: "应用列表"
+                title: "应用列表",
+                helpText: "这些应用中的复制操作不会被记录"
             )
             .onChange(of: settings.ignoredApps) { _ in
                 settings.save()
             }
-            
-            Text("这些应用中的复制操作不会被记录")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 4)
         }
         .padding(8)
     }
@@ -327,17 +322,12 @@ struct SettingsView: View {
             EditableListView(
                 items: $settings.ignoredPasteboardTypes,
                 title: "类型列表",
-                placeholder: "输入 pasteboard type"
+                placeholder: "输入 pasteboard type",
+                helpText: "这些类型的内容不会被记录（如密码、临时数据）"
             )
             .onChange(of: settings.ignoredPasteboardTypes) { _ in
                 settings.save()
             }
-            
-            Text("这些类型的内容不会被记录（如密码、临时数据）")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 4)
         }
         .padding(8)
     }

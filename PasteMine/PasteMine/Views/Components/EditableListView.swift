@@ -11,6 +11,7 @@ struct EditableListView: View {
     @Binding var items: [String]
     let title: String
     let placeholder: String
+    var helpText: String?
     
     @State private var newItem: String = ""
     @State private var isAdding: Bool = false
@@ -103,20 +104,30 @@ struct EditableListView: View {
                     .buttonStyle(.plain)
                 }
             } else {
-                Button(action: {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        isAdding = true
-                        isInputFocused = true
+                HStack(spacing: 8) {
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            isAdding = true
+                            isInputFocused = true
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: "plus.circle")
+                            Text("添加")
+                        }
+                        .font(.caption)
+                        .foregroundStyle(Color.accentColor)
                     }
-                }) {
-                    HStack {
-                        Image(systemName: "plus.circle")
-                        Text("添加")
+                    .buttonStyle(.plain)
+                    
+                    if let helpText = helpText {
+                        Text(helpText)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
                     }
-                    .font(.caption)
-                    .foregroundStyle(Color.accentColor)
+                    
+                    Spacer()
                 }
-                .buttonStyle(.plain)
             }
         }
     }
@@ -146,7 +157,8 @@ struct EditableListView: View {
     EditableListView(
         items: $testItems,
         title: "测试列表",
-        placeholder: "输入项目名称"
+        placeholder: "输入项目名称",
+        helpText: "这是帮助文字"
     )
     .padding()
     .frame(width: 300)

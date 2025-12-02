@@ -12,6 +12,7 @@ import UniformTypeIdentifiers
 struct AppPickerView: View {
     @Binding var apps: [IgnoredApp]
     let title: String
+    var helpText: String?
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -70,17 +71,27 @@ struct AppPickerView: View {
             )
             
             // 添加按钮 - 打开文件选择器
-            Button(action: {
-                selectApp()
-            }) {
-                HStack {
-                    Image(systemName: "plus.circle")
-                    Text("选择应用")
+            HStack(spacing: 8) {
+                Button(action: {
+                    selectApp()
+                }) {
+                    HStack {
+                        Image(systemName: "plus.circle")
+                        Text("选择应用")
+                    }
+                    .font(.caption)
+                    .foregroundStyle(Color.accentColor)
                 }
-                .font(.caption)
-                .foregroundStyle(Color.accentColor)
+                .buttonStyle(.plain)
+                
+                if let helpText = helpText {
+                    Text(helpText)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
             }
-            .buttonStyle(.plain)
         }
     }
     
@@ -176,7 +187,8 @@ struct AppPickerView: View {
     
     AppPickerView(
         apps: $testApps,
-        title: "测试应用列表"
+        title: "测试应用列表",
+        helpText: "这些应用中的复制操作不会被记录"
     )
     .padding()
     .frame(width: 320)
