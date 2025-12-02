@@ -299,17 +299,14 @@ struct SettingsView: View {
             .padding(.bottom, 4)
             
             // 子分组内容区域
-            ScrollView {
-                VStack(alignment: .leading, spacing: 10) {
-                    switch selectedPrivacySubGroup {
-                    case .apps:
-                        appsSubGroup
-                    case .types:
-                        typesSubGroup
-                    }
+            VStack(alignment: .leading, spacing: 10) {
+                switch selectedPrivacySubGroup {
+                case .apps:
+                    appsSubGroup
+                case .types:
+                    typesSubGroup
                 }
             }
-            .frame(height: 157)
             
             Divider()
                 .padding(.vertical, 2)
