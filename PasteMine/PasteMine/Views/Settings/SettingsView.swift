@@ -130,11 +130,11 @@ struct SettingsView: View {
     // 通用设置
     @ViewBuilder
     private var generalSettings: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 6) {
             SettingsSectionView(title: "") {
                 HStack(spacing: 12) {
                     Text("通知")
-                        .font(.subheadline)
+                        .font(.body)
                         .foregroundStyle(.primary)
                     
                     Spacer()
@@ -149,13 +149,13 @@ struct SettingsView: View {
                 Text("复制时显示通知")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
-                    .padding(.top, 2)
+                    .padding(.top, 1)
             }
 
             SettingsSectionView(title: "") {
                 HStack(spacing: 12) {
                     Text("音效")
-                        .font(.subheadline)
+                        .font(.body)
                         .foregroundStyle(.primary)
                     
                     Spacer()
@@ -173,13 +173,13 @@ struct SettingsView: View {
                 Text("播放提示音效")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
-                    .padding(.top, 2)
+                    .padding(.top, 1)
             }
         }
 
         SettingsSectionView(title: "") {
-            VStack(alignment: .leading, spacing: 8) {
-                VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 1) {
                     Text("全局快捷键")
                         .font(.subheadline)
                         .foregroundStyle(.primary)
@@ -195,6 +195,7 @@ struct SettingsView: View {
                 }
                 
                 Divider()
+                    .padding(.vertical, 2)
                 
                 HStack(spacing: 12) {
                     Text("开机自启动")
@@ -214,6 +215,7 @@ struct SettingsView: View {
                 Text("自动启动应用")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
+                    .padding(.top, 1)
             }
         }
     }
@@ -221,8 +223,12 @@ struct SettingsView: View {
     // 存储设置
     @ViewBuilder
     private var storageSettings: some View {
-        SettingsSectionView(title: "历史记录上限") {
+        SettingsSectionView(title: "") {
             VStack(alignment: .leading, spacing: 3) {
+                Text("历史记录上限")
+                    .font(.body)
+                    .foregroundStyle(.primary)
+                
                 Picker("", selection: $settings.maxHistoryCount) {
                     ForEach(AppSettings.historyCountOptions, id: \.self) { count in
                         Text(count == 999 ? "永久" : "\(count) 条").tag(count)
@@ -238,12 +244,11 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .frame(maxWidth: 320)
 
         SettingsSectionView(title: "") {
             HStack(spacing: 12) {
                 Text("忽略大图片以节省磁盘空间")
-                    .font(.subheadline)
+                    .font(.body)
                     .foregroundStyle(.primary)
                 
                 Spacer()
@@ -258,9 +263,8 @@ struct SettingsView: View {
             Text("超过 20MB 的图片将不会被保存到历史中")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
-                .padding(.top, 2)
+                .padding(.top, 1)
         }
-        .frame(maxWidth: 320)
     }
 
     // 隐私设置
@@ -370,7 +374,7 @@ struct SettingsView: View {
             Text("退出应用时自动清除所有历史记录")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
-                .padding(.top, 2)
+                .padding(.top, 1)
         }
         .frame(maxWidth: 320)
     }
@@ -388,7 +392,7 @@ struct SettingsSectionView<Content: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(.caption)
                 .fontWeight(.semibold)
@@ -396,7 +400,7 @@ struct SettingsSectionView<Content: View>: View {
 
             content
         }
-        .padding(9)
+        .padding(8)
         .background {
             if #available(macOS 14, *) {
                 RoundedRectangle(cornerRadius: 8)
