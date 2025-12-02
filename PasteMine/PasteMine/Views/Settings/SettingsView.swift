@@ -116,7 +116,7 @@ struct SettingsView: View {
             }
             .padding(16)
         }
-        .frame(width: 420, height: 500)
+        .frame(width: 420, height: 521)
         .background {
             if #available(macOS 14, *) {
                 Color.clear
@@ -309,7 +309,7 @@ struct SettingsView: View {
                     }
                 }
             }
-            .frame(height: 150)
+            .frame(height: 157)
             
             Divider()
                 .padding(.vertical, 2)
