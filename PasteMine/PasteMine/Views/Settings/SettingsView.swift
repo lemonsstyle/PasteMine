@@ -130,26 +130,36 @@ struct SettingsView: View {
     // 通用设置
     @ViewBuilder
     private var generalSettings: some View {
-        HStack(spacing: 8) {
-            SettingsSectionView(title: "通知") {
-                VStack(alignment: .leading, spacing: 3) {
+        VStack(spacing: 8) {
+            SettingsSectionView(title: "") {
+                HStack(spacing: 12) {
+                    Text("通知")
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                    
+                    Spacer()
+                    
                     Toggle("", isOn: $settings.notificationEnabled)
                         .toggleStyle(.switch)
                         .onChange(of: settings.notificationEnabled) { _ in
                             settings.save()
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                    Text("复制时显示通知")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                
+                Text("复制时显示通知")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .padding(.top, 2)
             }
-            .frame(maxWidth: .infinity)
 
-            SettingsSectionView(title: "音效") {
-                VStack(alignment: .leading, spacing: 3) {
+            SettingsSectionView(title: "") {
+                HStack(spacing: 12) {
+                    Text("音效")
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                    
+                    Spacer()
+                    
                     Toggle("", isOn: $settings.soundEnabled)
                         .toggleStyle(.switch)
                         .onChange(of: settings.soundEnabled) { _ in
@@ -158,51 +168,53 @@ struct SettingsView: View {
                                 SoundService.shared.playCopySound()
                             }
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                    Text("播放提示音效")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                
+                Text("播放提示音效")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .padding(.top, 2)
             }
-            .frame(maxWidth: .infinity)
         }
 
-        HStack(spacing: 8) {
-            SettingsSectionView(title: "全局快捷键") {
-                VStack(alignment: .leading, spacing: 3) {
+        SettingsSectionView(title: "") {
+            VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("全局快捷键")
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                    
                     ShortcutRecorderView(shortcut: $settings.globalShortcut)
                         .onChange(of: settings.globalShortcut) { _ in
                             settings.save()
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
+                    
                     Text("显示/隐藏窗口")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
-            }
-            .frame(minWidth: 240, maxWidth: .infinity)
-
-            SettingsSectionView(title: "开机自启动") {
-                VStack(alignment: .leading, spacing: 3) {
+                
+                Divider()
+                
+                HStack(spacing: 12) {
+                    Text("开机自启动")
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                    
+                    Spacer()
+                    
                     Toggle("", isOn: $settings.launchAtLogin)
                         .toggleStyle(.switch)
                         .onChange(of: settings.launchAtLogin) { newValue in
                             settings.save()
                             LaunchAtLoginService.shared.setLaunchAtLogin(enabled: newValue)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                    Text("自动启动应用")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                
+                Text("自动启动应用")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
-            .frame(width: 140)
         }
     }
 
@@ -228,20 +240,25 @@ struct SettingsView: View {
         }
         .frame(maxWidth: 320)
 
-        SettingsSectionView(title: "忽略大图片以节省磁盘空间") {
-            VStack(alignment: .leading, spacing: 3) {
+        SettingsSectionView(title: "") {
+            HStack(spacing: 12) {
+                Text("忽略大图片以节省磁盘空间")
+                    .font(.subheadline)
+                    .foregroundStyle(.primary)
+                
+                Spacer()
+                
                 Toggle("", isOn: $settings.ignoreLargeImages)
                     .toggleStyle(.switch)
                     .onChange(of: settings.ignoreLargeImages) { _ in
                         settings.save()
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                Text("超过 20MB 的图片将不会被保存到历史中")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
             }
+            
+            Text("超过 20MB 的图片将不会被保存到历史中")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .padding(.top, 2)
         }
         .frame(maxWidth: 320)
     }
@@ -335,20 +352,25 @@ struct SettingsView: View {
     // 退出时清空部分（始终显示在底部）
     @ViewBuilder
     private var clearOnQuitSection: some View {
-        SettingsSectionView(title: "退出时清空剪贴板") {
-            VStack(alignment: .leading, spacing: 3) {
+        SettingsSectionView(title: "") {
+            HStack(spacing: 12) {
+                Text("退出时清空剪贴板")
+                    .font(.subheadline)
+                    .foregroundStyle(.primary)
+                
+                Spacer()
+                
                 Toggle("", isOn: $settings.clearOnQuit)
                     .toggleStyle(.switch)
                     .onChange(of: settings.clearOnQuit) { _ in
                         settings.save()
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                
-                Text("退出应用时自动清除所有历史记录")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
             }
+            
+            Text("退出应用时自动清除所有历史记录")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .padding(.top, 2)
         }
         .frame(maxWidth: 320)
     }
