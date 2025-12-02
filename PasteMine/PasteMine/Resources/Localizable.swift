@@ -61,6 +61,7 @@ enum AppText {
             static let typeListTitle = "类型列表"
             static let typePlaceholder = "输入 pasteboard type"
             static let ignoreTypesDesc = "这些类型的内容不会被记录（如密码、临时数据）"
+            static let ignoreTypesToggleLabel = "启用忽略类型"
             
             static let clearOnQuit = "退出时清空剪贴板"
             static let clearOnQuitDesc = "退出应用时自动清除所有历史记录"

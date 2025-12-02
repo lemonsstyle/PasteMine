@@ -12,6 +12,8 @@ struct EditableListView: View {
     let title: String
     let placeholder: String
     var helpText: String?
+    var toggleBinding: Binding<Bool>? = nil
+    var toggleLabel: String? = nil
     
     @State private var newItem: String = ""
     @State private var isAdding: Bool = false
@@ -110,11 +112,11 @@ struct EditableListView: View {
                             isAdding = true
                             isInputFocused = true
                         }
-                }) {
-                    HStack {
-                        Image(systemName: "plus.circle")
-                        Text(AppText.Settings.Privacy.addType)
-                    }
+                    }) {
+                        HStack {
+                            Image(systemName: "plus.circle")
+                            Text(AppText.Settings.Privacy.addType)
+                        }
                         .font(.caption)
                         .foregroundStyle(Color.accentColor)
                     }
@@ -127,6 +129,21 @@ struct EditableListView: View {
                     }
                     
                     Spacer()
+                    
+                    if let toggleBinding = toggleBinding {
+                        HStack(spacing: 4) {
+                            if let toggleLabel = toggleLabel {
+                                Text(toggleLabel)
+                                    .font(.caption2)
+                                    .foregroundStyle(.primary)
+                            }
+                            
+                            Toggle("", isOn: toggleBinding)
+                                .toggleStyle(.switch)
+                                .labelsHidden()
+                                .controlSize(.mini)
+                        }
+                    }
                 }
             }
         }

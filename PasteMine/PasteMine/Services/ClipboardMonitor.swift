@@ -243,6 +243,10 @@ class ClipboardMonitor {
     /// 检查剪贴板类型是否应该被忽略
     private func shouldIgnorePasteboardTypes() -> Bool {
         let settings = AppSettings.load()
+        guard settings.ignoreTypesEnabled else {
+            return false
+        }
+        
         let types = pasteboard.types ?? []
         
         for type in types {

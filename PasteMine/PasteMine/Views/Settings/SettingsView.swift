@@ -344,9 +344,14 @@ struct SettingsView: View {
                 items: $settings.ignoredPasteboardTypes,
                 title: AppText.Settings.Privacy.typeListTitle,
                 placeholder: AppText.Settings.Privacy.typePlaceholder,
-                helpText: AppText.Settings.Privacy.ignoreTypesDesc
+                helpText: AppText.Settings.Privacy.ignoreTypesDesc,
+                toggleBinding: $settings.ignoreTypesEnabled,
+                toggleLabel: AppText.Settings.Privacy.ignoreTypesToggleLabel
             )
             .onChange(of: settings.ignoredPasteboardTypes) { _ in
+                settings.save()
+            }
+            .onChange(of: settings.ignoreTypesEnabled) { _ in
                 settings.save()
             }
         }

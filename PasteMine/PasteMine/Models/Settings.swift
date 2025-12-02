@@ -38,6 +38,7 @@ struct AppSettings: Codable {
         "de.petermaurer.TransientPasteboardType",
         "net.antelle.keeweb"
     ]  // 忽略的剪贴板类型列表
+    var ignoreTypesEnabled: Bool = false  // 是否启用忽略类型功能（默认关闭）
     var clearOnQuit: Bool = false  // 退出时清空剪贴板
     
     // 存储到 UserDefaults
