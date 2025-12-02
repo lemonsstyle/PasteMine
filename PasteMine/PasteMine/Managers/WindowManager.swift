@@ -12,6 +12,7 @@ class WindowManager: NSObject {
     private var window: NSWindow?
     private var previousApp: NSRunningApplication?
     private var clickOutsideMonitor: Any?
+    private var isAutoHidePaused = false
     
     override init() {
         super.init()
@@ -86,6 +87,22 @@ class WindowManager: NSObject {
             // 不自动切换，让 PasteService 控制
         }
         print("🙈 窗口已隐藏")
+    }
+    
+    /// 将焦点重新聚焦到窗口
+    func refocus() {
+        window?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+    
+    /// 暂停点击外部自动隐藏
+    func pauseAutoHide() {
+        isAutoHidePaused = true
+    }
+    
+    /// 恢复点击外部自动隐藏
+    func resumeAutoHide() {
+        isAutoHidePaused = false
     }
     
     /// 切换窗口显示状态
@@ -182,6 +199,7 @@ class WindowManager: NSObject {
     /// 处理点击外部事件
     private func handleClickOutside(_ event: NSEvent) {
         guard let window = window, window.isVisible else { return }
+        guard !isAutoHidePaused else { return }
         
         // 获取点击位置（屏幕坐标）
         let clickLocation = NSEvent.mouseLocation

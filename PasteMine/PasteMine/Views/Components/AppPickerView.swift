@@ -86,6 +86,8 @@ struct AppPickerView: View {
     }
     
     private func selectApp() {
+        AppDelegate.shared?.windowManager?.pauseAutoHide()
+        
         let panel = NSOpenPanel()
         panel.title = "选择要忽略的应用"
         panel.message = "请选择一个应用程序"
@@ -98,13 +100,16 @@ struct AppPickerView: View {
         panel.begin { response in
             // 延迟处理，确保文件选择器完全关闭
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                defer {
+                    AppDelegate.shared?.windowManager?.resumeAutoHide()
+                    AppDelegate.shared?.windowManager?.refocus()
+                }
+                
                 if response == .OK, let url = panel.url {
                     guard let bundle = Bundle(url: url),
                           let bundleId = bundle.bundleIdentifier else {
                         NSSound.beep()
                         print("❌ 无法获取应用的 Bundle ID")
-                        // 重新激活应用
-                        NSApp.activate(ignoringOtherApps: true)
                         return
                     }
                     
@@ -135,9 +140,6 @@ struct AppPickerView: View {
                         print("⚠️  应用已存在: \(displayName)")
                     }
                 }
-                
-                // 无论成功与否，都重新激活应用窗口
-                NSApp.activate(ignoringOtherApps: true)
             }
         }
     }
