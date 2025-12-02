@@ -11,6 +11,14 @@ import Foundation
 class NotificationService {
     static let shared = NotificationService()
     
+    // 缓存权限状态，避免每次异步检查
+    private var isAuthorized: Bool = false
+    
+    // 节流控制：防止短时间内发送过多通知被系统抑制
+    private var lastCopyNotificationTime: Date = .distantPast
+    private var lastPasteNotificationTime: Date = .distantPast
+    private let minNotificationInterval: TimeInterval = 0.3  // 最小间隔 0.3 秒
+    
     private init() {
         requestPermission()
     }
@@ -18,20 +26,30 @@ class NotificationService {
     /// 请求通知权限
     func requestPermission() {
         // 先检查当前权限状态
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
+        UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
             print("📊 当前通知权限状态: \(settings.authorizationStatus.rawValue)")
             print("   - 0: notDetermined (未请求)")
             print("   - 1: denied (已拒绝)")
             print("   - 2: authorized (已授权)")
+            
+            // 更新缓存的权限状态
+            DispatchQueue.main.async {
+                self?.isAuthorized = settings.authorizationStatus == .authorized
+            }
 
             // 如果还未请求过权限，则请求
             if settings.authorizationStatus == .notDetermined {
                 print("🔔 首次启动，正在请求通知权限...")
 
-                UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+                UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { [weak self] granted, error in
                     if let error = error {
                         print("❌ 请求通知权限时出错: \(error.localizedDescription)")
                         return
+                    }
+
+                    // 更新缓存的权限状态
+                    DispatchQueue.main.async {
+                        self?.isAuthorized = granted
                     }
 
                     if granted {
@@ -57,56 +75,79 @@ class NotificationService {
         }
     }
     
+    /// 刷新权限状态缓存
+    func refreshAuthorizationStatus() {
+        UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
+            DispatchQueue.main.async {
+                self?.isAuthorized = settings.authorizationStatus == .authorized
+                print("🔄 权限状态已刷新: \(settings.authorizationStatus == .authorized ? "已授权" : "未授权")")
+            }
+        }
+    }
+    
     /// 发送剪贴板更新通知
     func sendClipboardNotification(content: String, isImage: Bool = false) {
         let settings = AppSettings.load()
         guard settings.notificationEnabled else {
             print("📢 通知已禁用（应用设置）")
+            // 即使通知禁用，也播放音效
+            SoundService.shared.playCopySound()
             return
         }
 
-        // 检查系统通知授权状态
-        UNUserNotificationCenter.current().getNotificationSettings { notificationSettings in
-            print("📊 通知授权状态: \(notificationSettings.authorizationStatus.rawValue)")
-            print("   - 0: notDetermined, 1: denied, 2: authorized, 3: provisional, 4: ephemeral")
-            print("📊 警报样式: \(notificationSettings.alertSetting.rawValue)")
-            print("   - 0: notSupported, 1: disabled, 2: enabled")
-            print("📊 声音设置: \(notificationSettings.soundSetting.rawValue)")
+        // 节流检查：防止短时间内发送过多通知
+        let now = Date()
+        if now.timeIntervalSince(lastCopyNotificationTime) < minNotificationInterval {
+            print("⏳ 通知节流：距离上次通知时间过短，跳过本次通知")
+            // 即使跳过通知，也播放音效
+            SoundService.shared.playCopySound()
+            return
+        }
+        lastCopyNotificationTime = now
 
-            guard notificationSettings.authorizationStatus == .authorized else {
-                print("❌ 通知未授权，请在系统设置中允许通知")
-                print("   路径: 系统设置 > 通知 > PasteMine")
-                return
-            }
+        // 使用缓存的权限状态，避免异步检查带来的不确定性
+        guard isAuthorized else {
+            print("❌ 通知未授权（缓存状态），尝试刷新权限状态")
+            print("   路径: 系统设置 > 通知 > PasteMine")
+            // 刷新权限状态以备下次使用
+            refreshAuthorizationStatus()
+            // 即使通知未授权，也播放音效
+            SoundService.shared.playCopySound()
+            return
+        }
 
-            let notificationContent = UNMutableNotificationContent()
-            notificationContent.title = isImage ? "📸 复制了图片" : "📋 剪贴板已更新"
+        // 构建通知内容
+        let notificationContent = UNMutableNotificationContent()
+        notificationContent.title = isImage ? "📸 复制了图片" : "📋 剪贴板已更新"
 
-            // 截断内容，最多显示 50 个字符
-            let truncated = content.count > 50
-                ? String(content.prefix(50)) + "..."
-                : content
-            notificationContent.body = truncated
-            // 不使用系统通知声音，使用自定义音效（避免双重声音）
-            notificationContent.sound = nil
+        // 截断内容，最多显示 50 个字符
+        let truncated = content.count > 50
+            ? String(content.prefix(50)) + "..."
+            : content
+        notificationContent.body = truncated
+        // 不使用系统通知声音，使用自定义音效（避免双重声音）
+        notificationContent.sound = nil
 
-            let request = UNNotificationRequest(
-                identifier: UUID().uuidString,
-                content: notificationContent,
-                trigger: nil
-            )
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: notificationContent,
+            trigger: nil
+        )
 
-            UNUserNotificationCenter.current().add(request) { error in
+        UNUserNotificationCenter.current().add(request) { [weak self] error in
+            // 确保在主线程执行后续操作
+            DispatchQueue.main.async {
                 if let error = error {
                     print("❌ 发送通知失败: \(error.localizedDescription)")
+                    // 发送失败时刷新权限状态
+                    self?.refreshAuthorizationStatus()
                 } else {
                     print("✅ 通知已成功发送: \(truncated)")
                 }
+                // 无论通知发送成功与否，都播放音效
+                SoundService.shared.playCopySound()
             }
         }
-
-        // 播放复制音效
-        SoundService.shared.playCopySound()
     }
 
     /// 发送粘贴通知
@@ -114,46 +155,62 @@ class NotificationService {
         let settings = AppSettings.load()
         guard settings.notificationEnabled else {
             print("📢 通知已禁用（应用设置）")
+            // 即使通知禁用，也播放音效
+            SoundService.shared.playPasteSound()
             return
         }
 
-        // 检查系统通知授权状态
-        UNUserNotificationCenter.current().getNotificationSettings { notificationSettings in
-            print("📊 粘贴通知授权状态: \(notificationSettings.authorizationStatus.rawValue)")
+        // 节流检查：防止短时间内发送过多通知
+        let now = Date()
+        if now.timeIntervalSince(lastPasteNotificationTime) < minNotificationInterval {
+            print("⏳ 通知节流：距离上次通知时间过短，跳过本次通知")
+            // 即使跳过通知，也播放音效
+            SoundService.shared.playPasteSound()
+            return
+        }
+        lastPasteNotificationTime = now
 
-            guard notificationSettings.authorizationStatus == .authorized else {
-                print("❌ 通知未授权，请在系统设置中允许通知")
-                return
-            }
+        // 使用缓存的权限状态，避免异步检查带来的不确定性
+        guard isAuthorized else {
+            print("❌ 粘贴通知未授权（缓存状态），尝试刷新权限状态")
+            // 刷新权限状态以备下次使用
+            refreshAuthorizationStatus()
+            // 即使通知未授权，也播放音效
+            SoundService.shared.playPasteSound()
+            return
+        }
 
-            let notificationContent = UNMutableNotificationContent()
-            notificationContent.title = isImage ? "📸 已粘贴图片" : "📋 已粘贴文本"
+        // 构建通知内容
+        let notificationContent = UNMutableNotificationContent()
+        notificationContent.title = isImage ? "📸 已粘贴图片" : "📋 已粘贴文本"
 
-            // 截断内容，最多显示 50 个字符
-            let truncated = content.count > 50
-                ? String(content.prefix(50)) + "..."
-                : content
-            notificationContent.body = truncated
-            // 不使用系统通知声音，使用自定义音效（避免双重声音）
-            notificationContent.sound = nil
+        // 截断内容，最多显示 50 个字符
+        let truncated = content.count > 50
+            ? String(content.prefix(50)) + "..."
+            : content
+        notificationContent.body = truncated
+        // 不使用系统通知声音，使用自定义音效（避免双重声音）
+        notificationContent.sound = nil
 
-            let request = UNNotificationRequest(
-                identifier: UUID().uuidString,
-                content: notificationContent,
-                trigger: nil
-            )
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: notificationContent,
+            trigger: nil
+        )
 
-            UNUserNotificationCenter.current().add(request) { error in
+        UNUserNotificationCenter.current().add(request) { [weak self] error in
+            // 确保在主线程执行后续操作
+            DispatchQueue.main.async {
                 if let error = error {
                     print("❌ 发送粘贴通知失败: \(error.localizedDescription)")
+                    // 发送失败时刷新权限状态
+                    self?.refreshAuthorizationStatus()
                 } else {
                     print("✅ 粘贴通知已成功发送: \(truncated)")
                 }
+                // 无论通知发送成功与否，都播放音效
+                SoundService.shared.playPasteSound()
             }
         }
-
-        // 播放粘贴音效
-        SoundService.shared.playPasteSound()
     }
 }
-
