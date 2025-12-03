@@ -23,15 +23,42 @@ struct HistoryListView: View {
     @State private var searchText = ""
     @State private var scrollToTopID: UUID = UUID()
     @State private var selectedIndex: Int = 0
+    @State private var selectedFilter: AppSourceFilter? = nil
     @Binding var showSettings: Bool
+    
+    // 统计所有应用出现次数
+    var appStatistics: [AppSourceFilter] {
+        var appCounts: [String: Int] = [:]
+        
+        for item in items {
+            if let appSource = item.appSource, !appSource.isEmpty {
+                appCounts[appSource, default: 0] += 1
+            }
+        }
+        
+        // 按次数排序
+        return appCounts.map { AppSourceFilter(appName: $0.key, count: $0.value) }
+            .sorted { $0.count > $1.count }
+    }
+    
+    // 前2个最常用的应用
+    var topApps: [AppSourceFilter] {
+        Array(appStatistics.prefix(2))
+    }
 
     var filteredItems: [ClipboardItem] {
-        var items: [ClipboardItem]
-
-        if searchText.isEmpty {
-            items = Array(self.items)
-        } else {
-            items = self.items.filter {
+        var items: [ClipboardItem] = Array(self.items)
+        
+        // 应用来源筛选
+        if let filter = selectedFilter, !filter.appName.isEmpty {
+            items = items.filter { item in
+                item.appSource == filter.appName
+            }
+        }
+        
+        // 搜索文本筛选
+        if !searchText.isEmpty {
+            items = items.filter {
                 // 文本：搜索内容
                 if $0.itemType == .text {
                     return ($0.content ?? "").localizedCaseInsensitiveContains(searchText)
@@ -65,8 +92,13 @@ struct HistoryListView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // 搜索栏
-            SearchBarView(searchText: $searchText)
+            // 搜索栏和筛选器
+            SearchBarView(
+                searchText: $searchText,
+                selectedFilter: $selectedFilter,
+                topApps: topApps,
+                allApps: appStatistics
+            )
 
             // 列表
             if filteredItems.isEmpty {

@@ -78,6 +78,10 @@ enum AppText {
         static let emptyStateMessage = "开始复制内容，它们会出现在这里"
         static let clearAll = "清空"
         static let settings = "设置"
+        
+        // 筛选相关
+        static let filterAll = "全部"
+        static let filterMore = "..."
     }
     
     // MARK: - 引导页面
