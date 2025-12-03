@@ -22,6 +22,7 @@ public class ClipboardItem: NSManagedObject, Identifiable {
     @NSManaged public var contentHash: String?
     @NSManaged public var createdAt: Date?
     @NSManaged public var appSource: String?
+    @NSManaged public var appBundleId: String?  // 应用 Bundle ID
     @NSManaged public var type: String?  // "text" 或 "image"
     @NSManaged public var imagePath: String?  // 图片文件路径
     @NSManaged public var imageWidth: Int32  // 图片宽度

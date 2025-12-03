@@ -26,18 +26,25 @@ struct HistoryListView: View {
     @State private var selectedFilter: AppSourceFilter? = nil
     @Binding var showSettings: Bool
     
-    // 统计所有应用出现次数
+    // 统计所有应用出现次数（使用 bundleId 作为唯一标识）
     var appStatistics: [AppSourceFilter] {
-        var appCounts: [String: Int] = [:]
+        var appData: [String: (displayName: String, bundleId: String?, count: Int)] = [:]
         
         for item in items {
             if let appSource = item.appSource, !appSource.isEmpty {
-                appCounts[appSource, default: 0] += 1
+                // 使用 bundleId 作为 key（如果有的话），否则用 displayName
+                let key = item.appBundleId ?? appSource
+                
+                if let existing = appData[key] {
+                    appData[key] = (existing.displayName, existing.bundleId, existing.count + 1)
+                } else {
+                    appData[key] = (appSource, item.appBundleId, 1)
+                }
             }
         }
         
         // 按次数排序
-        return appCounts.map { AppSourceFilter(appName: $0.key, count: $0.value) }
+        return appData.map { AppSourceFilter(appName: $0.value.displayName, bundleId: $0.value.bundleId, count: $0.value.count) }
             .sorted { $0.count > $1.count }
     }
     
@@ -49,10 +56,16 @@ struct HistoryListView: View {
     var filteredItems: [ClipboardItem] {
         var items: [ClipboardItem] = Array(self.items)
         
-        // 应用来源筛选
+        // 应用来源筛选（优先用 bundleId 匹配，没有则用 displayName）
         if let filter = selectedFilter, !filter.appName.isEmpty {
             items = items.filter { item in
-                item.appSource == filter.appName
+                if let bundleId = filter.bundleId, !bundleId.isEmpty {
+                    // 如果 filter 有 bundleId，优先用 bundleId 匹配
+                    return item.appBundleId == bundleId
+                } else {
+                    // 否则用 displayName 匹配（兼容旧数据）
+                    return item.appSource == filter.appName
+                }
             }
         }
         

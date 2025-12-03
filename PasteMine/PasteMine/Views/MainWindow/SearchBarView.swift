@@ -10,38 +10,17 @@ import AppKit
 
 struct AppSourceFilter: Equatable {
     let appName: String
+    let bundleId: String?
     let count: Int
     
-    static let all = AppSourceFilter(appName: "", count: 0) // 特殊值表示"全部"
+    static let all = AppSourceFilter(appName: "", bundleId: nil, count: 0) // 特殊值表示"全部"
     
     static func == (lhs: AppSourceFilter, rhs: AppSourceFilter) -> Bool {
-        lhs.appName == rhs.appName
-    }
-    
-    // 获取应用图标
-    var icon: NSImage {
-        guard !appName.isEmpty else {
-            return NSImage(systemSymbolName: "square.grid.2x2", accessibilityDescription: nil) ?? NSImage()
+        // 优先用 bundleId 匹配，如果都没有则用 appName
+        if let lhsId = lhs.bundleId, let rhsId = rhs.bundleId {
+            return lhsId == rhsId
         }
-        
-        // 尝试通过应用名称查找应用路径
-        let workspace = NSWorkspace.shared
-        
-        // 常见应用路径
-        let appPaths = [
-            "/Applications/\(appName).app",
-            "/System/Applications/\(appName).app",
-            "/Applications/Utilities/\(appName).app"
-        ]
-        
-        for path in appPaths {
-            if FileManager.default.fileExists(atPath: path) {
-                return workspace.icon(forFile: path)
-            }
-        }
-        
-        // 如果找不到，使用默认图标
-        return NSImage(systemSymbolName: "app", accessibilityDescription: nil) ?? NSImage()
+        return lhs.appName == rhs.appName
     }
 }
 
@@ -110,10 +89,10 @@ struct SearchBarView: View {
                         // 前2个最常用的应用
                         ForEach(topApps.prefix(2), id: \.appName) { app in
                             IconFilterButton(
-                                icon: getIcon(for: app.appName),
+                                icon: getIconByBundleId(app.bundleId),
                                 appName: app.appName,
                                 count: app.count,
-                                isSelected: selectedFilter?.appName == app.appName,
+                                isSelected: selectedFilter == app,
                                 action: {
                                     withAnimation(.smooth(duration: 0.2)) {
                                         selectedFilter = app
@@ -147,10 +126,10 @@ struct SearchBarView: View {
                     HStack(spacing: 6) {
                         ForEach(allApps, id: \.appName) { app in
                             IconFilterButton(
-                                icon: getIcon(for: app.appName),
+                                icon: getIconByBundleId(app.bundleId),
                                 appName: app.appName,
                                 count: app.count,
-                                isSelected: selectedFilter?.appName == app.appName,
+                                isSelected: selectedFilter == app,
                                 action: {
                                     withAnimation(.smooth(duration: 0.2)) {
                                         selectedFilter = app
@@ -167,16 +146,18 @@ struct SearchBarView: View {
         }
     }
     
-    // 获取应用图标（带缓存）
+    // 获取应用图标（带缓存）- 通过应用名查找
     private func getIcon(for appName: String) -> NSImage {
         if let cached = iconCache[appName] {
             return cached
         }
         
+        // 首先尝试通过 Bundle ID 获取图标
+        // 因为 appName 实际上是 displayName，不一定能找到应用包
         let workspace = NSWorkspace.shared
         var icon: NSImage?
         
-        // 常见应用路径
+        // 常见应用路径模式
         let appPaths = [
             "/Applications/\(appName).app",
             "/System/Applications/\(appName).app",
@@ -193,6 +174,31 @@ struct SearchBarView: View {
         // 如果找不到，使用默认图标
         let finalIcon = icon ?? (NSImage(systemSymbolName: "app", accessibilityDescription: nil) ?? NSImage())
         iconCache[appName] = finalIcon
+        return finalIcon
+    }
+    
+    // 通过 Bundle ID 获取应用图标
+    private func getIconByBundleId(_ bundleId: String?) -> NSImage {
+        guard let bundleId = bundleId, !bundleId.isEmpty else {
+            return NSImage(systemSymbolName: "app", accessibilityDescription: nil) ?? NSImage()
+        }
+        
+        // 检查缓存
+        if let cached = iconCache[bundleId] {
+            return cached
+        }
+        
+        let workspace = NSWorkspace.shared
+        var icon: NSImage?
+        
+        // 通过 Bundle ID 获取应用路径
+        if let appURL = workspace.urlForApplication(withBundleIdentifier: bundleId) {
+            icon = workspace.icon(forFile: appURL.path)
+        }
+        
+        // 如果找不到，使用默认图标
+        let finalIcon = icon ?? (NSImage(systemSymbolName: "app", accessibilityDescription: nil) ?? NSImage())
+        iconCache[bundleId] = finalIcon
         return finalIcon
     }
 }

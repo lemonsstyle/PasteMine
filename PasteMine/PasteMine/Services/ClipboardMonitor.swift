@@ -103,8 +103,12 @@ class ClipboardMonitor {
         
         // 保存到数据库
         do {
-            let appSource = getCurrentApp().displayName
-            try DatabaseService.shared.insertTextItem(content: content, appSource: appSource)
+            let currentApp = getCurrentApp()
+            try DatabaseService.shared.insertTextItem(
+                content: content,
+                appSource: currentApp.displayName,
+                appBundleId: currentApp.bundleId
+            )
             
             // 发送通知
             NotificationService.shared.sendClipboardNotification(content: content, isImage: false)
@@ -146,8 +150,13 @@ class ClipboardMonitor {
 
                 // 保存原始数据到数据库（保持原画质）
                 do {
-                    let appSource = getCurrentApp().displayName
-                    try DatabaseService.shared.insertImageItemRawData(data: imageData, type: type, appSource: appSource)
+                    let currentApp = getCurrentApp()
+                    try DatabaseService.shared.insertImageItemRawData(
+                        data: imageData,
+                        type: type,
+                        appSource: currentApp.displayName,
+                        appBundleId: currentApp.bundleId
+                    )
 
                     // 获取图片尺寸用于通知
                     var sizeText = ""

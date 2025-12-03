@@ -33,7 +33,7 @@ class DatabaseService {
     }
     
     /// 插入文本记录
-    func insertTextItem(content: String, appSource: String? = nil) throws {
+    func insertTextItem(content: String, appSource: String? = nil, appBundleId: String? = nil) throws {
         let contentHash = HashUtility.sha256(content)
         
         // 检查是否已存在
@@ -49,6 +49,7 @@ class DatabaseService {
         item.contentHash = contentHash
         item.createdAt = Date()
         item.appSource = appSource
+        item.appBundleId = appBundleId
         
         try context.save()
         print("✅ 新文本已保存: \(content.prefix(50))...")
@@ -58,7 +59,7 @@ class DatabaseService {
     }
     
     /// 插入图片记录（使用原始数据，保持原画质）
-    func insertImageItemRawData(data: Data, type: NSPasteboard.PasteboardType, appSource: String? = nil) throws {
+    func insertImageItemRawData(data: Data, type: NSPasteboard.PasteboardType, appSource: String? = nil, appBundleId: String? = nil) throws {
         // 保存图片原始数据到文件系统
         let result = try ImageStorageManager.shared.saveImageRawData(data, type: type)
 
@@ -78,6 +79,7 @@ class DatabaseService {
         item.imageHeight = Int32(result.height)
         item.createdAt = Date()
         item.appSource = appSource
+        item.appBundleId = appBundleId
 
         try context.save()
         print("✅ 新图片已保存（原画质，格式：\(result.format.uppercased())）: \(result.width)×\(result.height)")
