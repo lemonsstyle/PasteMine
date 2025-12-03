@@ -95,10 +95,9 @@ struct SearchBarView: View {
                 // 筛选按钮组
                 if !allApps.isEmpty {
                     HStack(spacing: 6) {
-                        // "全部"按钮
-                        FilterButton(
-                            icon: NSImage(systemSymbolName: "square.grid.2x2", accessibilityDescription: nil) ?? NSImage(),
-                            count: nil,
+                        // "全部"按钮（文字版）
+                        TextFilterButton(
+                            title: "全部",
                             isSelected: selectedFilter == nil,
                             action: {
                                 withAnimation(.smooth(duration: 0.2)) {
@@ -110,8 +109,9 @@ struct SearchBarView: View {
                         
                         // 前2个最常用的应用
                         ForEach(topApps.prefix(2), id: \.appName) { app in
-                            FilterButton(
+                            IconFilterButton(
                                 icon: getIcon(for: app.appName),
+                                appName: app.appName,
                                 count: app.count,
                                 isSelected: selectedFilter?.appName == app.appName,
                                 action: {
@@ -124,8 +124,9 @@ struct SearchBarView: View {
                         }
                         
                         // "..."按钮
-                        FilterButton(
+                        IconFilterButton(
                             icon: NSImage(systemSymbolName: "ellipsis", accessibilityDescription: nil) ?? NSImage(),
+                            appName: "更多",
                             count: nil,
                             isSelected: showAllApps,
                             action: {
@@ -145,8 +146,9 @@ struct SearchBarView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 6) {
                         ForEach(allApps, id: \.appName) { app in
-                            FilterButton(
+                            IconFilterButton(
                                 icon: getIcon(for: app.appName),
+                                appName: app.appName,
                                 count: app.count,
                                 isSelected: selectedFilter?.appName == app.appName,
                                 action: {
@@ -160,7 +162,7 @@ struct SearchBarView: View {
                     }
                     .padding(.horizontal)
                 }
-                .frame(height: 36)
+                .frame(height: 34)
             }
         }
     }
@@ -195,9 +197,40 @@ struct SearchBarView: View {
     }
 }
 
-// 筛选按钮组件（图标版）
-struct FilterButton: View {
+// 文字筛选按钮（用于"全部"）
+struct TextFilterButton: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+    @State private var isHovered = false
+    
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(isSelected ? .white : .primary)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background {
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(isSelected ? Color.accentColor : (isHovered ? Color.secondary.opacity(0.15) : Color.secondary.opacity(0.08)))
+                }
+        }
+        .buttonStyle(.plain)
+        .frame(height: 28)
+        .help(title)
+        .onHover { hovering in
+            withAnimation(.smooth(duration: 0.15)) {
+                isHovered = hovering
+            }
+        }
+    }
+}
+
+// 图标筛选按钮（用于应用）
+struct IconFilterButton: View {
     let icon: NSImage
+    let appName: String
     var count: Int? = nil
     let isSelected: Bool
     let action: () -> Void
@@ -205,27 +238,19 @@ struct FilterButton: View {
     
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 2) {
-                Image(nsImage: icon)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 20, height: 20)
-                
-                if let count = count {
-                    Text("\(count)")
-                        .font(.system(size: 9))
-                        .foregroundStyle(isSelected ? .white.opacity(0.9) : .secondary)
+            Image(nsImage: icon)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 22, height: 22)
+                .padding(3)
+                .background {
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(isSelected ? Color.accentColor : (isHovered ? Color.secondary.opacity(0.15) : Color.secondary.opacity(0.08)))
                 }
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-            .background {
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(isSelected ? Color.accentColor : (isHovered ? Color.secondary.opacity(0.15) : Color.secondary.opacity(0.08)))
-            }
         }
         .buttonStyle(.plain)
-        .help(count != nil ? "筛选 (\(count!) 条)" : "")
+        .frame(width: 28, height: 28)
+        .help(count != nil ? "\(appName) (\(count!) 条)" : appName)
         .onHover { hovering in
             withAnimation(.smooth(duration: 0.15)) {
                 isHovered = hovering
