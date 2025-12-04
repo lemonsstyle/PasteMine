@@ -311,19 +311,34 @@ struct HistoryListView: View {
 struct BottomActionBar: View {
     let onClearAll: () -> Void
     let onSettings: () -> Void
+    
+    @State private var hoveringClear = false
+    @State private var hoveringSettings = false
 
     var body: some View {
         HStack {
-            // 左侧：删除按钮
+            // 左侧：清空按钮
             Button(action: onClearAll) {
                 HStack(spacing: 4) {
                     Image(systemName: "trash")
+                        .font(.system(size: 13))
                     Text("清空")
+                        .font(.system(size: 13))
                 }
                 .foregroundStyle(.secondary)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(hoveringClear ? Color.secondary.opacity(0.15) : Color.secondary.opacity(0.08))
+                )
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .help("清空所有历史")
+            .onHover { hovering in
+                hoveringClear = hovering
+            }
 
             Spacer()
 
@@ -331,12 +346,24 @@ struct BottomActionBar: View {
             Button(action: onSettings) {
                 HStack(spacing: 4) {
                     Image(systemName: "gear")
+                        .font(.system(size: 13))
                     Text("设置")
+                        .font(.system(size: 13))
                 }
                 .foregroundStyle(.secondary)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(hoveringSettings ? Color.secondary.opacity(0.15) : Color.secondary.opacity(0.08))
+                )
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .help("设置")
+            .onHover { hovering in
+                hoveringSettings = hovering
+            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
