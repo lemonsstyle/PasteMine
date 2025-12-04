@@ -326,10 +326,10 @@ struct BottomActionBar: View {
                         .font(.system(size: 13))
                 }
                 .foregroundStyle(.secondary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
                 .background(
-                    RoundedRectangle(cornerRadius: 6)
+                    RoundedRectangle(cornerRadius: 5)
                         .fill(hoveringClear ? Color.secondary.opacity(0.15) : Color.secondary.opacity(0.08))
                 )
                 .contentShape(Rectangle())
@@ -351,10 +351,10 @@ struct BottomActionBar: View {
                         .font(.system(size: 13))
                 }
                 .foregroundStyle(.secondary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
                 .background(
-                    RoundedRectangle(cornerRadius: 6)
+                    RoundedRectangle(cornerRadius: 5)
                         .fill(hoveringSettings ? Color.secondary.opacity(0.15) : Color.secondary.opacity(0.08))
                 )
                 .contentShape(Rectangle())
@@ -365,8 +365,8 @@ struct BottomActionBar: View {
                 hoveringSettings = hovering
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 6)
         .background {
             if #available(macOS 14, *) {
                 Color.clear
