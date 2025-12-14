@@ -3,7 +3,7 @@
 
   # PasteMine
 
-A powerful clipboard history manager for macOS
+A clipboard history manager for macOS: lightweight, privacy, localization
 
 [中文文档](./README_CN.md) | English
 
@@ -42,6 +42,8 @@ After this, the app will open normally.
 
 
 ## Features
+
+**Only supports text and images**
 
 - **Clipboard History**: Automatically records your clipboard history with support for text, images, and files
 - **Quick Access**: Use customizable keyboard shortcuts to instantly access your clipboard history
