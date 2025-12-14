@@ -3,13 +3,43 @@
 
   # PasteMine
 
-A powerful clipboard history manager for macOS
+A clipboard history manager for macOS: lightweight, privacy, localization
 
 [中文文档](./README_CN.md) | English
 
 </div>
 
+## Directly install【macOS Security Notice】
+
+This app is **not signed or notarized by Apple**.
+When opening the app for the first time, macOS may block it.
+This is normal behavior for unsigned apps.
+
+You can allow the app to run using **either method below**.
+
+**Method 1: Allow in System Settings (Recommended)**
+
+1. Open the `.dmg` file and drag the app to **Applications**
+2. Try to open the app once, then click **Cancel**
+3. Open **System Settings → Privacy & Security**
+4. Scroll to the bottom
+5. Click **Open Anyway** next to the blocked app
+6. Confirm by clicking **Open**
+
+After this, the app will open normally.
+
+**Method 2: Open via Right-Click**
+
+1. Open **Applications**
+2. Right-click (or Control-click) the app
+3. Choose **Open**
+4. Click **Open** in the confirmation dialog
+
+---
+
 ## Features
+
+**Only supports text and images**
 
 - **Clipboard History**: Automatically records your clipboard history with support for text, images, and files
 - **Quick Access**: Use customizable keyboard shortcuts to instantly access your clipboard history
