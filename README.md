@@ -17,8 +17,6 @@ This is normal behavior for unsigned apps.
 
 You can allow the app to run using **either method below**.
 
----
-
 **Method 1: Allow in System Settings (Recommended)**
 
 1. Open the `.dmg` file and drag the app to **Applications**
@@ -30,8 +28,6 @@ You can allow the app to run using **either method below**.
 
 After this, the app will open normally.
 
----
-
 **Method 2: Open via Right-Click**
 
 1. Open **Applications**
@@ -39,7 +35,7 @@ After this, the app will open normally.
 3. Choose **Open**
 4. Click **Open** in the confirmation dialog
 
-
+---
 
 ## Features
 
