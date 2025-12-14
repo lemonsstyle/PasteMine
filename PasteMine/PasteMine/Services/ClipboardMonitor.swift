@@ -91,12 +91,13 @@ class ClipboardMonitor {
 
         let hasText = (pasteboard.string(forType: .string) ?? "").isEmpty == false
         let hasRasterImage = hasRasterImageData()
+        let hasImageFileURL = hasImageFileURL()
         let hasPDF = pasteboard.data(forType: .pdf) != nil
 
-        // 优先处理文件 URL 的图片（Finder 复制文件常见）
-        // 当存在位图类图片（png/jpeg/tiff等）时优先处理为图片
+        // 优先处理文件 URL 的图片（Finder 复制文件常见）或剪贴板中的位图数据
+        // 当存在位图类图片（png/jpeg/tiff等）或图片文件 URL 时优先处理为图片
         // 对于仅提供 PDF 且无纯文本的情况，视为图片；若同时有文本，则优先文本
-        if hasRasterImage {
+        if hasRasterImage || hasImageFileURL {
             if handleImage(allowPDF: false) { return }
         } else if hasPDF && !hasText {
             if handleImage(allowPDF: true) { return }
@@ -331,6 +332,35 @@ class ClipboardMonitor {
                 return true
             }
         }
+        return false
+    }
+
+    /// 检查剪贴板中是否有图片文件 URL（Finder 复制的文件）
+    private func hasImageFileURL() -> Bool {
+        guard let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL] else {
+            return false
+        }
+
+        for url in urls {
+            // 仅处理文件且存在
+            guard url.isFileURL,
+                  FileManager.default.fileExists(atPath: url.path) else {
+                continue
+            }
+
+            // 过滤目录
+            if let isDirectory = (try? url.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory, isDirectory {
+                continue
+            }
+
+            // 判断是否为图片类型
+            let contentType = (try? url.resourceValues(forKeys: [.contentTypeKey]))?.contentType
+                ?? UTType(filenameExtension: url.pathExtension)
+            if let contentType, contentType.conforms(to: .image) {
+                return true
+            }
+        }
+
         return false
     }
 
