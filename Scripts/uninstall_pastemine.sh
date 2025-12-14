@@ -96,12 +96,17 @@ for BUNDLE_ID in "${BUNDLE_IDS[@]}"; do
 done
 
 # Containers
-CONTAINER_PATH="${HOME}/Library/Containers/${BUNDLE_ID}"
-if [ -d "${CONTAINER_PATH}" ]; then
-    echo "   清理 Container 数据..."
-    rm -rf "${CONTAINER_PATH}"
-    echo "   ✓ 已删除 Container"
-fi
+for BUNDLE_ID in "${BUNDLE_IDS[@]}"; do
+    CONTAINER_PATH="${HOME}/Library/Containers/${BUNDLE_ID}"
+    if [ -d "${CONTAINER_PATH}" ]; then
+        echo "   清理 Container 数据: ${BUNDLE_ID}"
+        # 使用 || true 避免权限错误导致脚本终止
+        rm -rf "${CONTAINER_PATH}" 2>/dev/null || {
+            echo "   ⚠️  部分文件受系统保护，已跳过"
+        }
+        echo "   ✓ Container 已清理（如有）"
+    fi
+done
 
 # Group Containers
 GROUP_CONTAINER=$(find "${HOME}/Library/Group Containers" -name "*${APP_NAME}*" 2>/dev/null)

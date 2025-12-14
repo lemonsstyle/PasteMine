@@ -6,7 +6,7 @@ set -e
 
 APP_NAME="PasteMine"
 VERSION="1.1"
-APP_PATH="PasteMine/build/Release/${APP_NAME}.app"
+APP_PATH="PasteMine/build/Build/Products/Release/${APP_NAME}.app"
 DMG_NAME="${APP_NAME}-${VERSION}.dmg"
 TEMP_DMG="temp_${DMG_NAME}"
 VOLUME_NAME="${APP_NAME}"
