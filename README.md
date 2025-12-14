@@ -9,7 +9,7 @@ A clipboard history manager for macOS: lightweight, privacy, localization
 
 </div>
 
-## macOS Security Notice
+## Directly install【macOS Security Notice】
 
 This app is **not signed or notarized by Apple**.
 When opening the app for the first time, macOS may block it.
@@ -19,7 +19,7 @@ You can allow the app to run using **either method below**.
 
 ---
 
-### Method 1: Allow in System Settings (Recommended)
+**Method 1: Allow in System Settings (Recommended)**
 
 1. Open the `.dmg` file and drag the app to **Applications**
 2. Try to open the app once, then click **Cancel**
@@ -32,7 +32,7 @@ After this, the app will open normally.
 
 ---
 
-### Method 2: Open via Right-Click
+**Method 2: Open via Right-Click**
 
 1. Open **Applications**
 2. Right-click (or Control-click) the app
