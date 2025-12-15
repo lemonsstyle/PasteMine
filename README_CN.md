@@ -61,7 +61,7 @@
 
 ### 下载
 
-从 [Releases](https://github.com/lemonsstyle/PasteMine_App_Store/releases) 页面下载最新版本。
+从 [Releases](https://github.com/lemonsstyle/PasteMine/releases) 页面下载最新版本。
 
 ### 从源码构建
 
@@ -156,7 +156,7 @@ PasteMine 重视你的隐私：
 
 ## 支持
 
-如果遇到任何问题或有建议，请[提交 issue](https://github.com/lemonsstyle/PasteMine_App_Store/issues)。
+如果遇到任何问题或有建议，请[提交 issue](https://github.com/lemonsstyle/PasteMine/issues)。
 
 ---
 
