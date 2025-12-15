@@ -62,7 +62,7 @@ After this, the app will open normally.
 
 ### Download
 
-Download the latest release from the [Releases](https://github.com/lemonsstyle/PasteMine_App_Store/releases) page.
+Download the latest release from the [Releases](https://github.com/lemonsstyle/PasteMine/releases) page.
 
 ### Build from Source
 
@@ -157,7 +157,7 @@ Built with SwiftUI and modern macOS APIs.
 
 ## Support
 
-If you encounter any issues or have suggestions, please [open an issue](https://github.com/lemonsstyle/PasteMine_App_Store/issues).
+If you encounter any issues or have suggestions, please [open an issue](https://github.com/lemonsstyle/PasteMine/issues).
 
 ---
 
