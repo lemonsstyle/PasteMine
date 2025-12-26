@@ -173,11 +173,18 @@ class DatabaseService {
 
         let request = ClipboardItem.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
-        let items = try context.fetch(request)
+        let allItems = try context.fetch(request)
 
-        if items.count > limit {
-            // 删除超出限制的记录
-            for item in items[limit...] {
+        // 🔧 修复：分离固定和未固定的消息
+        let pinnedItems = allItems.filter { $0.isPinned }
+        let unpinnedItems = allItems.filter { !$0.isPinned }
+
+        // 固定的消息不计入数量限制，只对未固定的消息应用限制
+        if unpinnedItems.count > limit {
+            // 删除超出限制的未固定记录（从最旧的开始删除）
+            let itemsToDelete = unpinnedItems[limit...]
+
+            for item in itemsToDelete {
                 // 删除图片文件
                 if item.itemType == .image, let imagePath = item.imagePath {
                     ImageStorageManager.shared.deleteImage(at: imagePath)
@@ -185,7 +192,7 @@ class DatabaseService {
                 context.delete(item)
             }
             try context.save()
-            print("🗑️  已清理 \(items.count - limit) 条超出数量限制的记录（上限: \(limit)）")
+            print("🗑️  已清理 \(itemsToDelete.count) 条超出数量限制的记录（上限: \(limit)，固定消息: \(pinnedItems.count) 条已保留）")
         }
     }
     
