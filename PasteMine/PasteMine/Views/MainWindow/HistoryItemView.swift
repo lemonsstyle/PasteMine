@@ -31,10 +31,56 @@ struct HistoryItemView: View {
 
     private var timeAgo: String {
         guard let createdAt = item.createdAt else { return "" }
-        let formatter = RelativeDateTimeFormatter()
-        formatter.locale = .autoupdatingCurrent
-        formatter.unitsStyle = .short
-        return formatter.localizedString(for: createdAt, relativeTo: Date())
+        return formatTimeAgo(from: createdAt)
+    }
+
+    /// 自定义时间格式化
+    /// - 0~60秒 → "1分钟前"
+    /// - 2~59分钟 → "X分钟前"
+    /// - 1~23小时 → "X小时前"
+    /// - 24小时及以上 → "X天前"
+    private func formatTimeAgo(from date: Date) -> String {
+        let now = Date()
+        let interval = now.timeIntervalSince(date)
+        let seconds = Int(interval)
+        let minutes = seconds / 60
+        let hours = minutes / 60
+        let days = hours / 24
+
+        let isChinese = AppLanguage.current == .zhHans
+
+        // 0~60秒 → "1分钟前"
+        if seconds < 60 {
+            return isChinese ? "1分钟前" : "1 min ago"
+        }
+
+        // 1分钟 → "1分钟前"
+        if minutes == 1 {
+            return isChinese ? "1分钟前" : "1 min ago"
+        }
+
+        // 2~59分钟 → "X分钟前"
+        if minutes < 60 {
+            return isChinese ? "\(minutes)分钟前" : "\(minutes) min ago"
+        }
+
+        // 1小时 → "1小时前"
+        if hours == 1 {
+            return isChinese ? "1小时前" : "1 hr ago"
+        }
+
+        // 2~23小时 → "X小时前"
+        if hours < 24 {
+            return isChinese ? "\(hours)小时前" : "\(hours) hr ago"
+        }
+
+        // 1天 → "1天前"
+        if days == 1 {
+            return isChinese ? "1天前" : "1 day ago"
+        }
+
+        // 2天及以上 → "X天前"
+        return isChinese ? "\(days)天前" : "\(days) days ago"
     }
 
     var body: some View {

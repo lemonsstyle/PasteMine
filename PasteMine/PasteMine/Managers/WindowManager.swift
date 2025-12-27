@@ -79,15 +79,22 @@ class WindowManager: NSObject {
     /// 隐藏窗口
     func hide() {
         window?.orderOut(nil)
-        
+
         // 停止点击外部监听
         stopClickOutsideMonitor()
-        
-        // 恢复之前的应用（如果不是自动粘贴触发的）
-        if let app = previousApp, app.processIdentifier != NSRunningApplication.current.processIdentifier {
-            // 不自动切换，让 PasteService 控制
-        }
+
         print("🙈 窗口已隐藏")
+    }
+
+    /// 隐藏窗口并恢复之前应用的焦点
+    func hideAndRestoreFocus() {
+        hide()
+
+        // 激活之前的应用，恢复光标焦点
+        if let app = previousApp, app.processIdentifier != NSRunningApplication.current.processIdentifier {
+            app.activate(options: [])
+            print("✅ 已恢复焦点到: \(app.localizedName ?? "未知")")
+        }
     }
     
     /// 将焦点重新聚焦到窗口
@@ -201,17 +208,17 @@ class WindowManager: NSObject {
     private func handleClickOutside(_ event: NSEvent) {
         guard let window = window, window.isVisible else { return }
         guard !isAutoHidePaused else { return }
-        
+
         // 获取点击位置（屏幕坐标）
         let clickLocation = NSEvent.mouseLocation
-        
+
         // 获取窗口的屏幕坐标范围
         let windowFrame = window.frame
-        
+
         // 判断点击是否在窗口外部
         if !windowFrame.contains(clickLocation) {
             print("🖱️  点击外部，关闭窗口")
-            hide()
+            hideAndRestoreFocus()
         }
     }
     

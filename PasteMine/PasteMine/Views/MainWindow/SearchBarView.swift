@@ -31,6 +31,12 @@ struct SearchBarView: View {
     @Binding var isSourceFilterTooltipVisible: Bool  // 来源筛选气泡提示显示状态
     let topApps: [AppSourceFilter] // 前2个最常用的应用
     let allApps: [AppSourceFilter]  // 所有应用（按次数排序）
+    // 键盘事件回调
+    var onArrowUp: () -> Void = {}
+    var onArrowDown: () -> Void = {}
+    var onEnter: () -> Void = {}
+    var onEscape: () -> Void = {}
+
     @State private var isHovered = false
     @State private var showAllApps = false
     @State private var iconCache: [String: NSImage] = [:] // 图标缓存
@@ -44,8 +50,14 @@ struct SearchBarView: View {
                     Image(systemName: "magnifyingglass")
                         .foregroundStyle(.secondary)
 
-                    TextField(AppText.MainWindow.searchPlaceholder, text: $searchText)
-                        .textFieldStyle(.plain)
+                    FocusableSearchField(
+                        text: $searchText,
+                        placeholder: AppText.MainWindow.searchPlaceholder,
+                        onArrowUp: onArrowUp,
+                        onArrowDown: onArrowDown,
+                        onEnter: onEnter,
+                        onEscape: onEscape
+                    )
 
                     if !searchText.isEmpty {
                         Button(action: { searchText = "" }) {
@@ -354,4 +366,106 @@ struct SourceFilterTooltipView: View {
         )
         .padding(.horizontal)
     }
+}
+
+// MARK: - 可聚焦的搜索框（支持键盘导航）
+
+/// 自定义搜索框，支持自动聚焦和键盘事件拦截
+struct FocusableSearchField: NSViewRepresentable {
+    @Binding var text: String
+    var placeholder: String
+    var onArrowUp: () -> Void
+    var onArrowDown: () -> Void
+    var onEnter: () -> Void
+    var onEscape: () -> Void
+
+    func makeNSView(context: Context) -> NSTextField {
+        let textField = NSTextField()
+        textField.delegate = context.coordinator
+        textField.placeholderString = placeholder
+        textField.isBordered = false
+        textField.backgroundColor = .clear
+        textField.focusRingType = .none
+        textField.font = .systemFont(ofSize: 13)
+        textField.cell?.lineBreakMode = .byTruncatingTail
+
+        // 监听窗口显示通知，自动聚焦
+        NotificationCenter.default.addObserver(
+            context.coordinator,
+            selector: #selector(Coordinator.windowDidBecomeKey(_:)),
+            name: NSWindow.didBecomeKeyNotification,
+            object: nil
+        )
+
+        // 保存 textField 引用
+        context.coordinator.textField = textField
+
+        return textField
+    }
+
+    func updateNSView(_ nsView: NSTextField, context: Context) {
+        if nsView.stringValue != text {
+            nsView.stringValue = text
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    class Coordinator: NSObject, NSTextFieldDelegate, NSControlTextEditingDelegate {
+        var parent: FocusableSearchField
+        weak var textField: NSTextField?
+
+        init(_ parent: FocusableSearchField) {
+            self.parent = parent
+        }
+
+        deinit {
+            NotificationCenter.default.removeObserver(self)
+        }
+
+        @objc func windowDidBecomeKey(_ notification: Notification) {
+            // 窗口激活时，让搜索框获得焦点
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                guard let textField = self?.textField else { return }
+                textField.window?.makeFirstResponder(textField)
+            }
+        }
+
+        func controlTextDidChange(_ obj: Notification) {
+            if let textField = obj.object as? NSTextField {
+                parent.text = textField.stringValue
+            }
+        }
+
+        // 拦截特定按键命令
+        func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+            switch commandSelector {
+            case #selector(NSResponder.moveUp(_:)):
+                // 上箭头
+                parent.onArrowUp()
+                return true
+            case #selector(NSResponder.moveDown(_:)):
+                // 下箭头
+                parent.onArrowDown()
+                return true
+            case #selector(NSResponder.insertNewline(_:)):
+                // 回车
+                parent.onEnter()
+                return true
+            case #selector(NSResponder.cancelOperation(_:)):
+                // Esc
+                parent.onEscape()
+                return true
+            default:
+                return false
+            }
+        }
+    }
+}
+
+// 通知名称：请求搜索框聚焦
+extension Notification.Name {
+    static let focusSearchField = Notification.Name("focusSearchField")
 }

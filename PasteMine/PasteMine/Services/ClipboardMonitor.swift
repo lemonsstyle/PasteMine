@@ -11,7 +11,19 @@ import UniformTypeIdentifiers
 
 class ClipboardMonitor {
     var latestContent: String?
-    var isPasting: Bool = false  // 标记是否正在执行粘贴操作
+
+    // isPasting 标志位及超时保护
+    var isPasting: Bool = false {
+        didSet {
+            if isPasting {
+                isPastingSetTime = Date()
+            } else {
+                isPastingSetTime = nil
+            }
+        }
+    }
+    private var isPastingSetTime: Date?
+    private let isPastingTimeout: TimeInterval = 2.0  // 2秒超时保护
 
     private var timer: Timer?
     private var lastChangeCount: Int
@@ -66,6 +78,14 @@ class ClipboardMonitor {
     /// 检查剪贴板变化
     private func checkClipboard() {
         guard isEnabled else { return }
+
+        // 超时保护: 如果 isPasting 超过2秒，自动重置
+        if isPasting, let setTime = isPastingSetTime,
+           Date().timeIntervalSince(setTime) > isPastingTimeout {
+            print("⚠️ isPasting 超时（超过\(isPastingTimeout)秒），自动重置")
+            isPasting = false
+        }
+
         guard pasteboard.changeCount != lastChangeCount else { return }
 
         lastChangeCount = pasteboard.changeCount
@@ -264,20 +284,26 @@ class ClipboardMonitor {
 
     /// 更新 lastHash（用于粘贴操作时跳过通知但更新状态）
     private func updateLastHash() {
+        // 尝试图片
         if let imagePayload = getImageDataFromPasteboard(allowPDF: true) {
             lastHash = HashUtility.sha256Data(imagePayload.data)
-                latestContent = nil
+            latestContent = nil
             print("🖼️  已更新图片 hash（格式：\(formatText(for: imagePayload.type))）")
-                return
+            return
         }
 
-        // 其次检查文本
+        // 尝试文本
         if let content = pasteboard.string(forType: .string), !content.isEmpty {
             lastHash = HashUtility.sha256(content)
             latestContent = content
             print("📋 已更新文本 hash")
             return
         }
+
+        // 处理其他情况：使用 changeCount 生成唯一标识，防止状态不同步
+        lastHash = "unknown-\(pasteboard.changeCount)"
+        latestContent = nil
+        print("⚠️ 未知内容类型，使用 changeCount 作为 hash")
     }
     
     /// 检查剪贴板类型是否应该被忽略

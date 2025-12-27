@@ -33,6 +33,7 @@ struct HistoryListView: View {
     @State private var isPinLimitTooltipVisible = false  // 显示固定限制气泡提示
     @State private var isSourceFilterTooltipVisible = false  // 显示来源筛选限制气泡提示
     @State private var lockedItemID: UUID?  // 触发锁图标动画的项ID
+    @State private var scrollProxy: ScrollViewProxy?  // 保存 ScrollViewProxy 引用
     @Binding var showSettings: Bool
     @Binding var showProSheet: Bool
     
@@ -121,7 +122,11 @@ struct HistoryListView: View {
                 showProSheet: $showProSheet,
                 isSourceFilterTooltipVisible: $isSourceFilterTooltipVisible,
                 topApps: topApps,
-                allApps: appStatistics
+                allApps: appStatistics,
+                onArrowUp: { handleArrowUp() },
+                onArrowDown: { handleArrowDown() },
+                onEnter: { handleEnter() },
+                onEscape: { handleEscape() }
             )
             
             if !hasAccessibilityPermission {
@@ -194,16 +199,14 @@ struct HistoryListView: View {
                         }
                     }
                     .onAppear {
-                        // 首次显示时也滚动到顶部
+                        // 首次显示时也滚动到顶部，并保存 proxy 引用
+                        scrollProxy = proxy
                         selectedIndex = 0
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                             withAnimation(.easeOut(duration: 0.3)) {
                                 proxy.scrollTo("top", anchor: .top)
                             }
                         }
-                    }
-                    .onKeyboardEvent { event in
-                        handleKeyPress(event: event, proxy: proxy)
                     }
                 }
             }
@@ -241,34 +244,38 @@ struct HistoryListView: View {
         }
     }
 
-    private func handleKeyPress(event: NSEvent, proxy: ScrollViewProxy) {
-        guard !filteredItems.isEmpty else { return }
+    // MARK: - 键盘事件处理（由搜索框触发）
 
-        switch Int(event.keyCode) {
-        case 125: // 下箭头
-            if selectedIndex < filteredItems.count - 1 {
-                selectedIndex += 1
-                scrollToSelected(proxy: proxy)
-            }
-        case 126: // 上箭头
-            if selectedIndex > 0 {
-                selectedIndex -= 1
-                scrollToSelected(proxy: proxy)
-            }
-        case 36: // 回车
-            if selectedIndex < filteredItems.count {
-                pasteItem(filteredItems[selectedIndex])
-            }
-        default:
-            break
+    private func handleArrowUp() {
+        guard !filteredItems.isEmpty else { return }
+        if selectedIndex > 0 {
+            selectedIndex -= 1
+            scrollToSelected()
         }
     }
 
-    private func scrollToSelected(proxy: ScrollViewProxy) {
-        if selectedIndex < filteredItems.count {
-            withAnimation(.easeOut(duration: 0.2)) {
-                proxy.scrollTo(filteredItems[selectedIndex].id, anchor: .center)
-            }
+    private func handleArrowDown() {
+        guard !filteredItems.isEmpty else { return }
+        if selectedIndex < filteredItems.count - 1 {
+            selectedIndex += 1
+            scrollToSelected()
+        }
+    }
+
+    private func handleEnter() {
+        guard !filteredItems.isEmpty, selectedIndex < filteredItems.count else { return }
+        pasteItem(filteredItems[selectedIndex])
+    }
+
+    private func handleEscape() {
+        // Esc 键关闭窗口并恢复之前应用的焦点
+        AppDelegate.shared?.windowManager?.hideAndRestoreFocus()
+    }
+
+    private func scrollToSelected() {
+        guard let proxy = scrollProxy, selectedIndex < filteredItems.count else { return }
+        withAnimation(.easeOut(duration: 0.2)) {
+            proxy.scrollTo(filteredItems[selectedIndex].id, anchor: .center)
         }
     }
 
