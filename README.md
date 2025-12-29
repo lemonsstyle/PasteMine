@@ -15,6 +15,7 @@ This app is **not signed or notarized by Apple**.
 When opening the app for the first time, macOS may block it.
 This is normal behavior for unsigned apps.
 
+Download the latest release from the [Releases](https://github.com/lemonsstyle/PasteMine/releases) page.
 You can allow the app to run using **either method below**.
 
 **Method 1: Allow in System Settings (Recommended)**
@@ -58,11 +59,7 @@ After this, the app will open normally.
 - macOS 14.0 or later
 - Xcode 15.0 or later (for building from source)
 
-## Installation
-
-### Download
-
-Download the latest release from the [Releases](https://github.com/lemonsstyle/PasteMine/releases) page.
+## Local Installation
 
 ### Build from Source
 
