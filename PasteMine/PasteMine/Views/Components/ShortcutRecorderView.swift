@@ -23,11 +23,11 @@ struct ShortcutRecorderView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 4)
                 .background(
-                    RoundedRectangle(cornerRadius: 6)
+                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.small)
                         .fill(isRecording ? Color.blue.opacity(0.1) : Color.gray.opacity(0.1))
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 6)
+                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.small)
                         .stroke(isRecording ? Color.blue : Color.gray.opacity(0.3), lineWidth: 1)
                 )
                 .onTapGesture {

@@ -41,7 +41,7 @@ struct EditableListView: View {
                                 Spacer()
                                 
                                 Button(action: {
-                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                    withAnimation(DesignSystem.Animation.easeInOut()) {
                                         items.removeAll { $0 == item }
                                     }
                                 }) {
@@ -55,7 +55,7 @@ struct EditableListView: View {
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
                             .background(
-                                RoundedRectangle(cornerRadius: 4)
+                                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.small)
                                     .fill(Color.secondary.opacity(0.1))
                             )
                         }
@@ -65,7 +65,7 @@ struct EditableListView: View {
             }
             .frame(maxHeight: 120)
             .background(
-                RoundedRectangle(cornerRadius: 6)
+                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.small)
                     .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
             )
             
@@ -77,7 +77,7 @@ struct EditableListView: View {
                         .font(.caption)
                         .padding(6)
                         .background(
-                            RoundedRectangle(cornerRadius: 4)
+                            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.small)
                                 .fill(Color.secondary.opacity(0.1))
                         )
                         .focused($isInputFocused)
@@ -95,7 +95,7 @@ struct EditableListView: View {
                     .disabled(newItem.trimmingCharacters(in: .whitespaces).isEmpty)
                     
                     Button(action: {
-                        withAnimation(.easeInOut(duration: 0.2)) {
+                        withAnimation(DesignSystem.Animation.easeInOut()) {
                             isAdding = false
                             newItem = ""
                         }
@@ -108,7 +108,7 @@ struct EditableListView: View {
             } else {
                 HStack(spacing: 8) {
                     Button(action: {
-                        withAnimation(.easeInOut(duration: 0.2)) {
+                        withAnimation(DesignSystem.Animation.easeInOut()) {
                             isAdding = true
                             isInputFocused = true
                         }
@@ -160,7 +160,7 @@ struct EditableListView: View {
             return
         }
         
-        withAnimation(.easeInOut(duration: 0.2)) {
+        withAnimation(DesignSystem.Animation.easeInOut()) {
             items.append(trimmedItem)
             newItem = ""
             isAdding = false

@@ -60,28 +60,35 @@ struct SearchBarView: View {
                     )
 
                     if !searchText.isEmpty {
-                        Button(action: { searchText = "" }) {
+                        Button(action: {
+                            withAnimation(DesignSystem.Animation.easeOut()) {
+                                searchText = ""
+                            }
+                        }) {
                             Image(systemName: "xmark.circle.fill")
                                 .foregroundStyle(.secondary)
                         }
                         .buttonStyle(.plain)
+                        .transition(.scale.combined(with: .opacity))
                     }
                 }
                 .padding(8)
                 .background {
                     if #available(macOS 14, *) {
-                        RoundedRectangle(cornerRadius: 8)
+                        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.medium)
                             .fill(.regularMaterial)
-                            .shadow(color: .black.opacity(isHovered ? 0.12 : 0.06),
-                                    radius: isHovered ? 4 : 2,
-                                    y: isHovered ? 2 : 1)
+                            .overlay {
+                                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.medium)
+                                    .strokeBorder(.white.opacity(0.1), lineWidth: 0.5)
+                            }
+                            .applyShadow(DesignSystem.Shadow.medium(isHovered: isHovered))
                     } else {
-                        RoundedRectangle(cornerRadius: 8)
+                        RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.medium)
                             .fill(Color(NSColor.controlBackgroundColor))
                     }
                 }
                 .onHover { hovering in
-                    withAnimation(.smooth(duration: 0.2)) {
+                    withAnimation(DesignSystem.Animation.easeInOut()) {
                         isHovered = hovering
                     }
                 }
@@ -94,7 +101,7 @@ struct SearchBarView: View {
                             title: AppText.MainWindow.filterAll,
                             isSelected: selectedFilter == nil,
                             action: {
-                                withAnimation(.smooth(duration: 0.2)) {
+                                withAnimation(DesignSystem.Animation.easeInOut()) {
                                     selectedFilter = nil
                                     showAllApps = false
                                 }
@@ -110,7 +117,7 @@ struct SearchBarView: View {
                                 isSelected: selectedFilter == app,
                                 action: {
                                     // 🎉 所有用户都可以使用来源筛选功能
-                                    withAnimation(.smooth(duration: 0.2)) {
+                                    withAnimation(DesignSystem.Animation.easeInOut()) {
                                         selectedFilter = app
                                         showAllApps = false
                                     }
@@ -148,7 +155,7 @@ struct SearchBarView: View {
                                 isSelected: selectedFilter == app,
                                 action: {
                                     // 🎉 所有用户都可以使用来源筛选功能
-                                    withAnimation(.smooth(duration: 0.2)) {
+                                    withAnimation(DesignSystem.Animation.easeInOut()) {
                                         selectedFilter = app
                                         showAllApps = false
                                     }
@@ -297,7 +304,7 @@ struct TextFilterButton: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .background {
-                    RoundedRectangle(cornerRadius: 6)
+                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.small)
                         .fill(isSelected ? Color.accentColor : (isHovered ? Color.secondary.opacity(0.15) : Color.secondary.opacity(0.08)))
                 }
         }
@@ -305,7 +312,7 @@ struct TextFilterButton: View {
         .frame(height: 28)
         .help(title)
         .onHover { hovering in
-            withAnimation(.smooth(duration: 0.15)) {
+            withAnimation(DesignSystem.Animation.easeOut()) {
                 isHovered = hovering
             }
         }
@@ -329,7 +336,7 @@ struct IconFilterButton: View {
                 .frame(width: 22, height: 22)
                 .padding(3)
                 .background {
-                    RoundedRectangle(cornerRadius: 6)
+                    RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.small)
                         .fill(isSelected ? Color.accentColor : (isHovered ? Color.secondary.opacity(0.15) : Color.secondary.opacity(0.08)))
                 }
         }
@@ -337,7 +344,7 @@ struct IconFilterButton: View {
         .frame(width: 28, height: 28)
         .help(count != nil ? "\(appName) (\(count!) \(L10n.text("条", "items")))" : appName)
         .onHover { hovering in
-            withAnimation(.smooth(duration: 0.15)) {
+            withAnimation(DesignSystem.Animation.easeOut()) {
                 isHovered = hovering
             }
         }
@@ -360,7 +367,7 @@ struct SourceFilterTooltipView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.medium)
                 .fill(Color(NSColor.controlBackgroundColor))
                 .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
         )
