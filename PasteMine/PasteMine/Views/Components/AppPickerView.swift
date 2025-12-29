@@ -32,7 +32,7 @@ struct AppPickerView: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 20, height: 20)
-                                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                                    .clipShape(RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.small))
                                 
                                 Text(app.displayName)
                                     .font(.caption)
@@ -42,7 +42,7 @@ struct AppPickerView: View {
                                 Spacer()
                                 
                                 Button(action: {
-                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                    withAnimation(DesignSystem.Animation.easeInOut()) {
                                         apps.removeAll { $0.bundleId == app.bundleId }
                                     }
                                 }) {
@@ -56,7 +56,7 @@ struct AppPickerView: View {
                             .padding(.horizontal, 8)
                             .padding(.vertical, 6)
                             .background(
-                                RoundedRectangle(cornerRadius: 4)
+                                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.small)
                                     .fill(Color.secondary.opacity(0.1))
                             )
                         }
@@ -66,7 +66,7 @@ struct AppPickerView: View {
             }
             .frame(maxHeight: 120)
             .background(
-                RoundedRectangle(cornerRadius: 6)
+                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.small)
                     .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
             )
             
@@ -149,7 +149,7 @@ struct AppPickerView: View {
         
         // 检查是否已存在（通过 Bundle ID）
         if !apps.contains(where: { $0.bundleId == bundleId }) {
-            withAnimation(.easeInOut(duration: 0.2)) {
+            withAnimation(DesignSystem.Animation.easeInOut()) {
                 apps.append(ignoredApp)
             }
             print("✅ 已添加忽略应用: \(displayName) (\(bundleId))")

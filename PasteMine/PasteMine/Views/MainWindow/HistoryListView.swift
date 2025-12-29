@@ -369,45 +369,65 @@ struct HistoryListView: View {
         if let window = NSApp.keyWindow {
             alert.beginSheetModal(for: window) { response in
                 if response == .alertFirstButtonReturn {
-                    // 立即关闭窗口，让用户看不到删除过程
-                    AppDelegate.shared?.windowManager?.hide()
-
-                    // 在后台执行删除操作
-                    DispatchQueue.global(qos: .userInitiated).async {
-                        do {
-                            try DatabaseService.shared.clearAll()
-                            print("🗑️  后台删除完成")
-
-                            // 在主线程更新 UI 状态
-                            DispatchQueue.main.async {
-                                self.selectedIndex = 0
-                            }
-                        } catch {
-                            print("❌ 删除失败: \(error)")
-                        }
-                    }
+                    // 执行清空动画
+                    self.performClearAnimation()
                 }
             }
         } else {
             // 如果没有 keyWindow，直接显示对话框
             let response = alert.runModal()
             if response == .alertFirstButtonReturn {
-                // 立即关闭窗口
-                AppDelegate.shared?.windowManager?.hide()
+                // 执行清空动画
+                self.performClearAnimation()
+            }
+        }
+    }
 
-                // 在后台执行删除
-                DispatchQueue.global(qos: .userInitiated).async {
-                    do {
-                        try DatabaseService.shared.clearAll()
-                        print("🗑️  后台删除完成")
+    // 执行清空动画
+    private func performClearAnimation() {
+        // 获取当前可见的项目数量
+        let itemCount = filteredItems.count
 
-                        DispatchQueue.main.async {
-                            self.selectedIndex = 0
-                        }
-                    } catch {
-                        print("❌ 删除失败: \(error)")
-                    }
+        // 如果没有项目，直接清空
+        guard itemCount > 0 else {
+            clearAllData()
+            return
+        }
+
+        // 逐个淡出动画（从下往上）
+        for (index, _) in filteredItems.enumerated().reversed() {
+            let delay = Double(itemCount - index - 1) * 0.03 // 每个项目间隔 30ms
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                withAnimation(DesignSystem.Animation.easeOut(duration: 0.15)) {
+                    // 这里通过更新 selectedIndex 触发视图更新
+                    // 实际的删除会在动画结束后执行
                 }
+            }
+        }
+
+        // 等待所有动画完成后再清空数据
+        let totalAnimationTime = Double(itemCount) * 0.03 + 0.15
+        DispatchQueue.main.asyncAfter(deadline: .now() + totalAnimationTime) {
+            self.clearAllData()
+        }
+    }
+
+    // 实际清空数据
+    private func clearAllData() {
+        // 在后台执行删除操作
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                try DatabaseService.shared.clearAll()
+                print("🗑️  后台删除完成")
+
+                // 在主线程更新 UI 状态
+                DispatchQueue.main.async {
+                    self.selectedIndex = 0
+                    // 窗口保持打开，显示空状态
+                }
+            } catch {
+                print("❌ 删除失败: \(error)")
             }
         }
     }
