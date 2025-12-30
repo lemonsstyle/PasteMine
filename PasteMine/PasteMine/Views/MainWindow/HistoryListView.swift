@@ -19,7 +19,7 @@ struct HistoryListView: View {
     @EnvironmentObject private var proManager: ProEntitlementManager
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \ClipboardItem.createdAt, ascending: false)],
-        animation: .default
+        animation: .easeOut(duration: 0.25)
     )
     private var items: FetchedResults<ClipboardItem>
 
@@ -34,7 +34,6 @@ struct HistoryListView: View {
     @State private var isSourceFilterTooltipVisible = false  // 显示来源筛选限制气泡提示
     @State private var lockedItemID: UUID?  // 触发锁图标动画的项ID
     @State private var scrollProxy: ScrollViewProxy?  // 保存 ScrollViewProxy 引用
-    @State private var deletingItemIDs: Set<UUID> = []  // 正在删除的项目 ID
     @Binding var showSettings: Bool
     @Binding var showProSheet: Bool
     
@@ -165,13 +164,6 @@ struct HistoryListView: View {
                                 }
                             )
                                 .id(item.id)
-                                .opacity(deletingItemIDs.contains(item.id ?? UUID()) ? 0 : 1)
-                                .offset(y: deletingItemIDs.contains(item.id ?? UUID()) ? -20 : 0)
-                                .scaleEffect(deletingItemIDs.contains(item.id ?? UUID()) ? 0.95 : 1.0)
-                                .transition(.asymmetric(
-                                    insertion: .opacity,
-                                    removal: .move(edge: .top).combined(with: .opacity)
-                                ))
                                 .onTapGesture {
                                     selectedIndex = index
                                     pasteItem(item)
@@ -292,25 +284,14 @@ struct HistoryListView: View {
     }
 
     private func deleteItem(_ item: ClipboardItem) {
-        guard let itemID = item.id else { return }
-
-        // 标记为正在删除
-        deletingItemIDs.insert(itemID)
-
-        // 执行动画
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
-            // 触发视图更新（通过状态变化）
+        // 使用与 @FetchRequest 相同的动画参数
+        withAnimation(.easeOut(duration: 0.25)) {
+            try? DatabaseService.shared.delete(item)
         }
 
-        // 延迟实际删除（等待动画完成）
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            try? DatabaseService.shared.delete(item)
-            self.deletingItemIDs.remove(itemID)
-
-            // 调整选中索引
-            if self.selectedIndex >= self.filteredItems.count - 1 && self.selectedIndex > 0 {
-                self.selectedIndex -= 1
-            }
+        // 调整选中索引
+        if selectedIndex >= filteredItems.count - 1 && selectedIndex > 0 {
+            selectedIndex -= 1
         }
     }
 
