@@ -284,8 +284,8 @@ struct HistoryListView: View {
     }
 
     private func deleteItem(_ item: ClipboardItem) {
-        // 使用快速动画删除单条记录
-        withAnimation(.easeOut(duration: 0.15)) {
+        // 使用流畅的动画删除单条记录
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
             try? DatabaseService.shared.delete(item)
         }
         // 调整选中索引
