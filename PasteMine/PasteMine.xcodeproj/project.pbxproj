@@ -268,7 +268,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.PasteMine9; // TODO: Change to your own Bundle ID
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.PasteMine10; // TODO: Change to your own Bundle ID
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -303,7 +303,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.PasteMine9; // TODO: Change to your own Bundle ID
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.PasteMine10; // TODO: Change to your own Bundle ID
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;

@@ -57,7 +57,7 @@ struct AppSettings: Codable {
     // 隐私设置
     var ignoredApps: [IgnoredApp] = AppSettings.defaultIgnoredApps  // 忽略的应用列表
     var ignoredPasteboardTypes: [String] = AppSettings.defaultIgnoredPasteboardTypes  // 忽略的剪贴板类型列表
-    var ignoreTypesEnabled: Bool = true  // 是否启用忽略类型功能（默认开启）
+    var ignoreTypesEnabled: Bool = false  // 是否启用忽略类型功能（默认关闭）
     var clearOnQuit: Bool = false  // 退出时清空剪贴板
 
     // Pro 提示

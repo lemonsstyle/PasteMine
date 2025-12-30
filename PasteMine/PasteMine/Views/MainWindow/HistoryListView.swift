@@ -34,6 +34,7 @@ struct HistoryListView: View {
     @State private var isSourceFilterTooltipVisible = false  // 显示来源筛选限制气泡提示
     @State private var lockedItemID: UUID?  // 触发锁图标动画的项ID
     @State private var scrollProxy: ScrollViewProxy?  // 保存 ScrollViewProxy 引用
+    @State private var deletingItemIDs: Set<UUID> = []  // 正在删除的项目 ID
     @Binding var showSettings: Bool
     @Binding var showProSheet: Bool
     
@@ -164,6 +165,13 @@ struct HistoryListView: View {
                                 }
                             )
                                 .id(item.id)
+                                .opacity(deletingItemIDs.contains(item.id ?? UUID()) ? 0 : 1)
+                                .offset(y: deletingItemIDs.contains(item.id ?? UUID()) ? -20 : 0)
+                                .scaleEffect(deletingItemIDs.contains(item.id ?? UUID()) ? 0.95 : 1.0)
+                                .transition(.asymmetric(
+                                    insertion: .opacity,
+                                    removal: .move(edge: .top).combined(with: .opacity)
+                                ))
                                 .onTapGesture {
                                     selectedIndex = index
                                     pasteItem(item)
@@ -284,13 +292,25 @@ struct HistoryListView: View {
     }
 
     private func deleteItem(_ item: ClipboardItem) {
-        // 使用流畅的动画删除单条记录
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-            try? DatabaseService.shared.delete(item)
+        guard let itemID = item.id else { return }
+
+        // 标记为正在删除
+        deletingItemIDs.insert(itemID)
+
+        // 执行动画
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+            // 触发视图更新（通过状态变化）
         }
-        // 调整选中索引
-        if selectedIndex >= filteredItems.count - 1 && selectedIndex > 0 {
-            selectedIndex -= 1
+
+        // 延迟实际删除（等待动画完成）
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            try? DatabaseService.shared.delete(item)
+            self.deletingItemIDs.remove(itemID)
+
+            // 调整选中索引
+            if self.selectedIndex >= self.filteredItems.count - 1 && self.selectedIndex > 0 {
+                self.selectedIndex -= 1
+            }
         }
     }
 
