@@ -19,7 +19,7 @@ struct HistoryListView: View {
     @EnvironmentObject private var proManager: ProEntitlementManager
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \ClipboardItem.createdAt, ascending: false)],
-        animation: .default
+        animation: .easeOut(duration: 0.25)
     )
     private var items: FetchedResults<ClipboardItem>
 
@@ -284,10 +284,11 @@ struct HistoryListView: View {
     }
 
     private func deleteItem(_ item: ClipboardItem) {
-        // 使用快速动画删除单条记录
-        withAnimation(.easeOut(duration: 0.15)) {
+        // 使用与 @FetchRequest 相同的动画参数
+        withAnimation(.easeOut(duration: 0.25)) {
             try? DatabaseService.shared.delete(item)
         }
+
         // 调整选中索引
         if selectedIndex >= filteredItems.count - 1 && selectedIndex > 0 {
             selectedIndex -= 1
