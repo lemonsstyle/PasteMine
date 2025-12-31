@@ -41,7 +41,6 @@ After completion, open the application to run normally.
   - Filter specific clipboard types
   - Clear history anytime
 - **Sound Effects**: Optional sound feedback for copy/paste actions
-- **Launch at Login**: Automatically start with your system
 - **Modern UI**: Clean, native macOS interface built with SwiftUI
 
 ## Requirements
