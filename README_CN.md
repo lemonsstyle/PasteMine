@@ -16,8 +16,8 @@
 
 从 [Releases](https://github.com/lemonsstyle/PasteMine/releases) 页面下载最新版本。
 
-1. 打开 `.dmg` 文件，将应用拖入 **应用程序（Applications）**
-2. 尝试打开一次应用后，点击 **取消**
+1. 双击打开 `.dmg` 文件，将应用拖入 **应用程序（Applications）**
+2. 尝试打开一次应用后，系统提示安全性问题，点击 **完成**
 3. 打开 **系统设置 → 隐私与安全性**
 4. 滚动到页面底部
 5. 点击 **仍要打开**
