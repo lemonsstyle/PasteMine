@@ -18,7 +18,7 @@ This is normal behavior for unsigned apps.
 Download the latest release from the [Releases](https://github.com/lemonsstyle/PasteMine/releases) page.
 
 1. Open the `.dmg` file and drag the app to **Applications**
-2. Try to open the app once, then click **Cancel**
+2. Try to open the app once, the system prompts security issues, then click **Done**
 3. Open **System Settings → Privacy & Security**
 4. Scroll to the bottom
 5. Click **Open Anyway** next to the blocked app
