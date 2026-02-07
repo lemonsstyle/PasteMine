@@ -1,0 +1,17 @@
+# Xcode build output
+*.app
+*.dmg
+
+# Build artifacts
+build/
+DerivedData/
+
+# User-specific files
+*.xcuserstate
+*.xcuserdatad
+
+# Temporary files
+临时/
+
+# macOS
+.DS_Store
