@@ -15,6 +15,14 @@ enum ClipboardItemType: String {
     case image = "image"
 }
 
+/// 图片缓存管理器（使用 NSCache 自动管理内存）
+private let imageCache: NSCache<NSString, NSImage> = {
+    let cache = NSCache<NSString, NSImage>()
+    cache.countLimit = 20  // 最多缓存 20 张图片
+    cache.totalCostLimit = 50 * 1024 * 1024  // 最大 50MB
+    return cache
+}()
+
 @objc(ClipboardItem)
 public class ClipboardItem: NSManagedObject, Identifiable {
     @NSManaged public var id: UUID?
@@ -85,11 +93,40 @@ public class ClipboardItem: NSManagedObject, Identifiable {
     }
 
     /// 获取图片对象（如果是图片类型，仅用于显示）
+    /// 使用 NSCache 缓存，避免重复创建 NSImage 对象
     var image: NSImage? {
-        guard let data = imageRawData else {
+        guard let path = imagePath, !path.isEmpty else {
             return nil
         }
-        return NSImage(data: data)
+
+        let cacheKey = path as NSString
+
+        // 先检查缓存
+        if let cachedImage = imageCache.object(forKey: cacheKey) {
+            return cachedImage
+        }
+
+        // 缓存未命中，从磁盘加载
+        guard let data = imageRawData, let newImage = NSImage(data: data) else {
+            return nil
+        }
+
+        // 存入缓存（使用图片数据大小作为 cost）
+        let cost = data.count
+        imageCache.setObject(newImage, forKey: cacheKey, cost: cost)
+
+        return newImage
+    }
+
+    /// 从缓存中移除此图片
+    func removeImageFromCache() {
+        guard let path = imagePath else { return }
+        imageCache.removeObject(forKey: path as NSString)
+    }
+
+    /// 清空所有图片缓存
+    static func clearImageCache() {
+        imageCache.removeAllObjects()
     }
 
     /// 获取显示文本

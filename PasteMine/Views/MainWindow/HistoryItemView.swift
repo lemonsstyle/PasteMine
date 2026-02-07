@@ -207,6 +207,10 @@ struct HistoryItemView: View {
                     cachedImage = item.image
                 }
             }
+            .onDisappear {
+                // 清理图片缓存，防止内存泄漏
+                cachedImage = nil
+            }
 
             // 分隔线
             if #available(macOS 14, *) {

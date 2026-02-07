@@ -12,6 +12,7 @@ class WindowManager: NSObject {
     private var window: NSWindow?
     private var previousApp: NSRunningApplication?
     private var clickOutsideMonitor: Any?
+    private var localClickMonitor: Any?  // 本地点击事件监听器
     private var isAutoHidePaused = false
     
     override init() {
@@ -173,20 +174,20 @@ class WindowManager: NSObject {
     private func startClickOutsideMonitor() {
         // 移除旧的监听器
         stopClickOutsideMonitor()
-        
+
         // 监听全局鼠标点击事件
         clickOutsideMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
             self?.handleClickOutside(event)
         }
-        
+
         // 同时监听本地事件（窗口内的点击）
         // 这样可以正确处理窗口内外的点击
-        NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
+        localClickMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
             // 如果点击在窗口内，不关闭
             if let window = self?.window, window.isVisible {
                 let clickLocation = event.locationInWindow
                 let windowBounds = window.contentView?.bounds ?? .zero
-                
+
                 if windowBounds.contains(clickLocation) {
                     // 点击在窗口内，正常处理
                     return event
@@ -195,12 +196,16 @@ class WindowManager: NSObject {
             return event
         }
     }
-    
+
     /// 停止点击外部监听
     private func stopClickOutsideMonitor() {
         if let monitor = clickOutsideMonitor {
             NSEvent.removeMonitor(monitor)
             clickOutsideMonitor = nil
+        }
+        if let monitor = localClickMonitor {
+            NSEvent.removeMonitor(monitor)
+            localClickMonitor = nil
         }
     }
     
