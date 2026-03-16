@@ -11,7 +11,9 @@ import UserNotifications
 struct OnboardingView: View {
     @State private var currentStep = 0
     @State private var notificationPermissionGranted = false
+    @State private var notificationPermissionDenied = false
     @State private var accessibilityPermissionGranted = false
+    @State private var notificationPromptHint: String?
 
     var body: some View {
         ZStack {
@@ -59,6 +61,8 @@ struct OnboardingView: View {
                             // Step 1: notification permission
                             NotificationPermissionStepView(
                                 isGranted: $notificationPermissionGranted,
+                                isDenied: notificationPermissionDenied,
+                                promptHint: notificationPromptHint,
                                 primaryAction: {
                                     requestNotificationPermission()
                                 },
@@ -119,60 +123,37 @@ struct OnboardingView: View {
 
     private func requestNotificationPermission() {
         print("🔔 Requesting notification permission...")
+        notificationPromptHint = nil
 
-        // Ensure app is active so the system sheet can appear
-        NSApp.activate(ignoringOtherApps: true)
-
-        // Small delay to ensure activation is done
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            // Check current status first
-            UNUserNotificationCenter.current().getNotificationSettings { settings in
-                print("📊 Notification status: \(settings.authorizationStatus.rawValue)")
-
-                if settings.authorizationStatus == .notDetermined {
-                    // First-time request
-                    print("🔔 First request, system dialog will appear...")
-
-                    // Ensure activation again (LSUIElement app)
-                    NSApp.activate(ignoringOtherApps: true)
-
-                    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-                        DispatchQueue.main.async {
-                            if let error = error {
-                                print("❌ Notification permission failed: \(error.localizedDescription)")
-                            } else {
-                                let result = granted ? "granted" : "denied"
-                                print("✅ Notification permission: \(result)")
-                            }
-                            self.notificationPermissionGranted = granted
-                            if granted {
-                                // Go next
-                                withAnimation {
-                                    self.currentStep = 2
-                                }
-                            }
-                        }
-                    }
-                } else if settings.authorizationStatus == .authorized {
-                    // Already granted
-                    DispatchQueue.main.async {
-                        print("✅ Notification already granted")
-                        self.notificationPermissionGranted = true
-                        withAnimation {
-                            self.currentStep = 2
-                        }
-                    }
-                } else if settings.authorizationStatus == .denied {
-                    // Denied: guide to system settings
-                    DispatchQueue.main.async {
-                        print("⚠️ Notification permission denied, enable manually")
-                        self.notificationPermissionGranted = false
-                        // Open system settings
-                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") {
-                            NSWorkspace.shared.open(url)
-                        }
-                    }
+        NotificationService.shared.requestPermission { status in
+            switch status {
+            case .authorized, .provisional:
+                print("✅ Notification already granted")
+                self.notificationPermissionGranted = true
+                self.notificationPermissionDenied = false
+                self.notificationPromptHint = nil
+                withAnimation {
+                    self.currentStep = 2
                 }
+            case .denied:
+                print("⚠️ Notification permission denied, enable manually")
+                self.notificationPermissionGranted = false
+                self.notificationPermissionDenied = true
+                self.notificationPromptHint = AppText.Onboarding.enableInSettings
+            case .notDetermined:
+                self.notificationPermissionGranted = false
+                self.notificationPermissionDenied = false
+                self.notificationPromptHint = L10n.text(
+                    "系统这次没有显示授权弹窗。请将应用放在“应用程序”目录后，再次点击“授予权限”。",
+                    "The system prompt did not appear this time. Move the app to Applications, then click Grant Permission again."
+                )
+            @unknown default:
+                self.notificationPermissionGranted = false
+                self.notificationPermissionDenied = false
+                self.notificationPromptHint = L10n.text(
+                    "无法确认通知权限状态，请再次尝试。",
+                    "Couldn't confirm notification permission. Please try again."
+                )
             }
         }
     }
@@ -217,6 +198,7 @@ struct OnboardingView: View {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             DispatchQueue.main.async {
                 notificationPermissionGranted = settings.authorizationStatus == .authorized
+                notificationPermissionDenied = settings.authorizationStatus == .denied
             }
         }
 
@@ -377,9 +359,10 @@ struct FeatureCard: View {
 
 struct NotificationPermissionStepView: View {
     @Binding var isGranted: Bool
+    let isDenied: Bool
+    let promptHint: String?
     let primaryAction: () -> Void
     let secondaryAction: () -> Void
-    @State private var isDenied = false
 
     var body: some View {
         VStack(spacing: 14) {
@@ -480,6 +463,17 @@ struct NotificationPermissionStepView: View {
                         .foregroundStyle(.secondary)
                 }
                 .padding(.top, 3)
+            } else if let promptHint, !promptHint.isEmpty {
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "info.circle.fill")
+                        .foregroundStyle(.blue)
+                    Text(promptHint)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 3)
             }
 
             Spacer()
@@ -521,14 +515,6 @@ struct NotificationPermissionStepView: View {
             .padding(.bottom, 12)
         }
         .frame(maxWidth: .infinity)
-        .onAppear {
-            UNUserNotificationCenter.current().getNotificationSettings { settings in
-                DispatchQueue.main.async {
-                    isDenied = settings.authorizationStatus == .denied
-                    isGranted = settings.authorizationStatus == .authorized
-                }
-            }
-        }
     }
 }
 

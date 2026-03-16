@@ -137,6 +137,7 @@ class DatabaseService {
     func delete(_ item: ClipboardItem) throws {
         // 如果是图片，删除文件
         if item.itemType == .image, let imagePath = item.imagePath {
+            item.removeImageFromCache()
             ImageStorageManager.shared.deleteImage(at: imagePath)
         }
         
@@ -155,6 +156,7 @@ class DatabaseService {
         for item in allItems {
             // 如果是图片，删除文件
             if item.itemType == .image, let imagePath = item.imagePath {
+                item.removeImageFromCache()
                 ImageStorageManager.shared.deleteImage(at: imagePath)
             }
             context.delete(item)
@@ -187,6 +189,7 @@ class DatabaseService {
             for item in itemsToDelete {
                 // 删除图片文件
                 if item.itemType == .image, let imagePath = item.imagePath {
+                    item.removeImageFromCache()
                     ImageStorageManager.shared.deleteImage(at: imagePath)
                 }
                 context.delete(item)
@@ -204,4 +207,3 @@ class DatabaseService {
         return try context.count(for: request) > 0
     }
 }
-

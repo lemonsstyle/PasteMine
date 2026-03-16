@@ -83,6 +83,9 @@ class WindowManager: NSObject {
 
         // 停止点击外部监听
         stopClickOutsideMonitor()
+        ClipboardItem.clearImageCache()
+        ImagePreviewWindow.shared.hide()
+        NotificationCenter.default.post(name: .historyWindowDidHide, object: nil)
 
         print("🙈 窗口已隐藏")
     }
@@ -241,4 +244,3 @@ extension WindowManager: NSWindowDelegate {
         // hide()
     }
 }
-

@@ -12,7 +12,6 @@ struct HistoryItemView: View {
     var isSelected: Bool = false
     var showLockAnimation: Bool = false
     @State private var isHovered = false
-    @State private var cachedImage: NSImage? = nil
     @State private var iconScale: Double = 1.0         // 图标缩放动画
     var onPinToggle: ((ClipboardItem) -> Void)?
     var onHoverChanged: ((Bool) -> Void)?
@@ -87,7 +86,7 @@ struct HistoryItemView: View {
                 // 左侧：内容/图片预览
                 if item.itemType == .image {
                     // 显示图片缩略图
-                    if let image = cachedImage ?? item.image {
+                    if let image = item.thumbnailImage() {
                         Image(nsImage: image)
                             .resizable()
                             .scaledToFit()
@@ -202,15 +201,6 @@ struct HistoryItemView: View {
                     onHoverChanged?(hovering)
                 }
             }
-            .onAppear {
-                if cachedImage == nil, item.itemType == .image {
-                    cachedImage = item.image
-                }
-            }
-            .onDisappear {
-                // 清理图片缓存，防止内存泄漏
-                cachedImage = nil
-            }
 
             // 分隔线
             if #available(macOS 14, *) {
@@ -240,4 +230,3 @@ struct HistoryItemView: View {
         }
     }
 }
-

@@ -12,6 +12,7 @@ import Combine
 // 通知名称：窗口显示时滚动到顶部
 extension Notification.Name {
     static let scrollToTop = Notification.Name("scrollToTop")
+    static let historyWindowDidHide = Notification.Name("historyWindowDidHide")
 }
 
 struct HistoryListView: View {
@@ -242,6 +243,11 @@ struct HistoryListView: View {
                 ImagePreviewWindow.shared.hide()
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .historyWindowDidHide)) { _ in
+            previewWorkItem?.cancel()
+            previewWorkItem = nil
+            ImagePreviewWindow.shared.hide()
+        }
     }
 
     // MARK: - 键盘事件处理（由搜索框触发）
@@ -443,9 +449,8 @@ struct HistoryListView: View {
         previewWorkItem?.cancel()
 
         // 🎉 所有用户都可以使用图片预览功能（需开启设置）
-        guard imagePreviewEnabled,
-              item.itemType == .image,
-              let image = item.image else {
+        guard imagePreviewEnabled, item.itemType == .image else {
+            previewWorkItem = nil
             ImagePreviewWindow.shared.hide()
             return
         }
@@ -453,11 +458,13 @@ struct HistoryListView: View {
         if hovering {
             let work = DispatchWorkItem {
                 let anchorWindow = NSApp.mainWindow
+                guard let image = item.previewImage() else { return }
                 ImagePreviewWindow.shared.show(image: image, anchor: anchorWindow)
             }
             previewWorkItem = work
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: work)
         } else {
+            previewWorkItem = nil
             ImagePreviewWindow.shared.hide()
         }
     }
@@ -564,6 +571,7 @@ final class ImagePreviewWindow {
             panel.animator().alphaValue = 0
         }, completionHandler: { [weak self] in
             panel.orderOut(nil)
+            panel.contentView = nil
             panel.alphaValue = 1
             self?.isVisible = false
         })

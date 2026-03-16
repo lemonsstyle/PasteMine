@@ -7,6 +7,7 @@
 
 import UserNotifications
 import Foundation
+import AppKit
 
 class NotificationService {
     static let shared = NotificationService()
@@ -20,6 +21,8 @@ class NotificationService {
     private let minNotificationInterval: TimeInterval = 0.3  // 最小间隔 0.3 秒
     private var lastPermissionWarningTime: Date = .distantPast
     private let minPermissionWarningInterval: TimeInterval = 2.0
+    private var isPreparingPermissionPrompt = false
+    private var previousActivationPolicy: NSApplication.ActivationPolicy = .accessory
     
     private init() {
         // 不在 init 中自动请求权限
@@ -28,53 +31,20 @@ class NotificationService {
     }
     
     /// 请求通知权限
-    func requestPermission() {
-        // 先检查当前权限状态
-        UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
-            print("📊 当前通知权限状态: \(settings.authorizationStatus.rawValue)")
-            print("   - 0: notDetermined (未请求)")
-            print("   - 1: denied (已拒绝)")
-            print("   - 2: authorized (已授权)")
-            
-            // 更新缓存的权限状态
-            DispatchQueue.main.async {
-                self?.isAuthorized = settings.authorizationStatus == .authorized
-            }
+    func requestPermission(completion: ((UNAuthorizationStatus) -> Void)? = nil) {
+        preparePermissionPromptIfNeeded()
 
-            // 如果还未请求过权限，则请求
-            if settings.authorizationStatus == .notDetermined {
-                print("🔔 首次启动，正在请求通知权限...")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
+            self?.bringPromptHostToFront()
+            UNUserNotificationCenter.current().getNotificationSettings { settings in
+                print("📊 当前通知权限状态: \(settings.authorizationStatus.rawValue)")
+                print("   - 0: notDetermined (未请求)")
+                print("   - 1: denied (已拒绝)")
+                print("   - 2: authorized (已授权)")
 
-                UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { [weak self] granted, error in
-                    if let error = error {
-                        print("❌ 请求通知权限时出错: \(error.localizedDescription)")
-                        return
-                    }
-
-                    // 更新缓存的权限状态
-                    DispatchQueue.main.async {
-                        self?.isAuthorized = granted
-                    }
-
-                    if granted {
-                        print("✅ 通知权限已授予")
-                        // 再次检查详细设置
-                        UNUserNotificationCenter.current().getNotificationSettings { newSettings in
-                            print("📊 通知详细设置:")
-                            print("   授权状态: \(newSettings.authorizationStatus.rawValue)")
-                            print("   警报样式: \(newSettings.alertSetting.rawValue)")
-                            print("   声音设置: \(newSettings.soundSetting.rawValue)")
-                        }
-                    } else {
-                        print("⚠️  通知权限被拒绝")
-                        print("   请在系统设置中手动开启: 系统设置 > 通知 > PasteMine")
-                    }
+                DispatchQueue.main.async {
+                    self?.handleAuthorizationStatus(settings.authorizationStatus, completion: completion)
                 }
-            } else if settings.authorizationStatus == .denied {
-                print("⚠️  通知权限已被拒绝")
-                print("   请在系统设置中手动开启: 系统设置 > 通知 > PasteMine")
-            } else if settings.authorizationStatus == .authorized {
-                print("✅ 通知权限已授权")
             }
         }
     }
@@ -83,7 +53,7 @@ class NotificationService {
     func refreshAuthorizationStatus() {
         UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
             DispatchQueue.main.async {
-                self?.isAuthorized = settings.authorizationStatus == .authorized
+                self?.isAuthorized = Self.isAuthorizedStatus(settings.authorizationStatus)
                 print("🔄 权限状态已刷新: \(settings.authorizationStatus == .authorized ? "已授权" : "未授权")")
             }
         }
@@ -289,5 +259,116 @@ class NotificationService {
                 print("⚠️ 已提醒用户授予辅助功能权限")
             }
         }
+    }
+}
+
+private extension NotificationService {
+    static func isAuthorizedStatus(_ status: UNAuthorizationStatus) -> Bool {
+        switch status {
+        case .authorized, .provisional:
+            return true
+        case .denied, .notDetermined:
+            return false
+        @unknown default:
+            return false
+        }
+    }
+
+    func handleAuthorizationStatus(_ status: UNAuthorizationStatus, completion: ((UNAuthorizationStatus) -> Void)?) {
+        isAuthorized = Self.isAuthorizedStatus(status)
+
+        switch status {
+        case .notDetermined:
+            print("🔔 首次启动，正在请求通知权限...")
+            requestSystemAuthorization(completion: completion)
+        case .denied:
+            print("⚠️  通知权限已被拒绝")
+            print("   请在系统设置中手动开启: 系统设置 > 通知 > PasteMine")
+            finishPermissionPromptPreparation()
+            completion?(status)
+        case .authorized, .provisional:
+            print("✅ 通知权限已授权")
+            finishPermissionPromptPreparation()
+            completion?(status)
+        @unknown default:
+            finishPermissionPromptPreparation()
+            completion?(status)
+        }
+    }
+
+    func requestSystemAuthorization(completion: ((UNAuthorizationStatus) -> Void)?) {
+        bringPromptHostToFront()
+
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { [weak self] granted, error in
+            if let error = error {
+                print("❌ 请求通知权限时出错: \(error.localizedDescription)")
+            } else {
+                print("📣 requestAuthorization 返回: \(granted ? "granted" : "not granted")")
+            }
+
+            self?.verifyAuthorizationStatus(after: 0.35, completion: completion)
+        }
+    }
+
+    func verifyAuthorizationStatus(after delay: TimeInterval, completion: ((UNAuthorizationStatus) -> Void)?) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+            UNUserNotificationCenter.current().getNotificationSettings { settings in
+                DispatchQueue.main.async {
+                    self?.isAuthorized = Self.isAuthorizedStatus(settings.authorizationStatus)
+
+                    if settings.authorizationStatus == .authorized {
+                        print("✅ 通知权限已授予")
+                    } else if settings.authorizationStatus == .denied {
+                        print("⚠️  通知权限被拒绝")
+                    } else if settings.authorizationStatus == .notDetermined {
+                        print("⚠️  系统本次未展示通知权限弹窗，状态仍为 notDetermined")
+                    }
+
+                    self?.finishPermissionPromptPreparation()
+                    completion?(settings.authorizationStatus)
+                }
+            }
+        }
+    }
+
+    func preparePermissionPromptIfNeeded() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+
+            if !self.isPreparingPermissionPrompt {
+                self.previousActivationPolicy = NSApp.activationPolicy()
+                self.isPreparingPermissionPrompt = true
+            }
+
+            if NSApp.activationPolicy() != .regular {
+                _ = NSApp.setActivationPolicy(.regular)
+            }
+
+            self.bringPromptHostToFront()
+        }
+    }
+
+    func finishPermissionPromptPreparation() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            guard let self, self.isPreparingPermissionPrompt else { return }
+
+            if self.previousActivationPolicy != .regular {
+                _ = NSApp.setActivationPolicy(self.previousActivationPolicy)
+            }
+
+            self.isPreparingPermissionPrompt = false
+        }
+    }
+
+    func bringPromptHostToFront() {
+        if let onboardingWindow = AppDelegate.shared?.onboardingWindow {
+            onboardingWindow.makeKeyAndOrderFront(nil)
+            onboardingWindow.orderFrontRegardless()
+        } else if let keyWindow = NSApp.windows.first {
+            keyWindow.makeKeyAndOrderFront(nil)
+            keyWindow.orderFrontRegardless()
+        }
+
+        NSApp.activate(ignoringOtherApps: true)
     }
 }

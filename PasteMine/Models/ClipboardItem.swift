@@ -8,6 +8,7 @@
 import Foundation
 import CoreData
 import AppKit
+import ImageIO
 
 /// 剪贴板内容类型
 enum ClipboardItemType: String {
@@ -15,11 +16,11 @@ enum ClipboardItemType: String {
     case image = "image"
 }
 
-/// 图片缓存管理器（使用 NSCache 自动管理内存）
+/// 展示用图片缓存（仅缓存下采样后的缩略图/预览图）
 private let imageCache: NSCache<NSString, NSImage> = {
     let cache = NSCache<NSString, NSImage>()
-    cache.countLimit = 20  // 最多缓存 20 张图片
-    cache.totalCostLimit = 50 * 1024 * 1024  // 最大 50MB
+    cache.countLimit = 40
+    cache.totalCostLimit = 64 * 1024 * 1024
     return cache
 }()
 
@@ -92,36 +93,31 @@ public class ClipboardItem: NSManagedObject, Identifiable {
         return data
     }
 
-    /// 获取图片对象（如果是图片类型，仅用于显示）
-    /// 使用 NSCache 缓存，避免重复创建 NSImage 对象
+    /// 获取原图对象（仅用于兜底流程，不应用于列表展示）
     var image: NSImage? {
         guard let path = imagePath, !path.isEmpty else {
             return nil
         }
 
-        let cacheKey = path as NSString
+        return NSImage(contentsOf: URL(fileURLWithPath: path))
+    }
 
-        // 先检查缓存
-        if let cachedImage = imageCache.object(forKey: cacheKey) {
-            return cachedImage
-        }
+    /// 获取列表缩略图，避免把原图解码进 UI 常驻内存
+    func thumbnailImage(maxPixelSize: Int = 160) -> NSImage? {
+        loadDisplayImage(maxPixelSize: maxPixelSize)
+    }
 
-        // 缓存未命中，从磁盘加载
-        guard let data = imageRawData, let newImage = NSImage(data: data) else {
-            return nil
-        }
-
-        // 存入缓存（使用图片数据大小作为 cost）
-        let cost = data.count
-        imageCache.setObject(newImage, forKey: cacheKey, cost: cost)
-
-        return newImage
+    /// 获取预览图，限制解码尺寸以控制峰值内存
+    func previewImage(maxPixelSize: Int = 1024) -> NSImage? {
+        loadDisplayImage(maxPixelSize: maxPixelSize)
     }
 
     /// 从缓存中移除此图片
     func removeImageFromCache() {
         guard let path = imagePath else { return }
-        imageCache.removeObject(forKey: path as NSString)
+        for maxPixelSize in [160, 1024] {
+            imageCache.removeObject(forKey: "\(path)#\(maxPixelSize)" as NSString)
+        }
     }
 
     /// 清空所有图片缓存
@@ -141,9 +137,45 @@ public class ClipboardItem: NSManagedObject, Identifiable {
     }
 }
 
+private extension ClipboardItem {
+    func loadDisplayImage(maxPixelSize: Int) -> NSImage? {
+        guard let path = imagePath, !path.isEmpty else {
+            return nil
+        }
+
+        let cacheKey = "\(path)#\(maxPixelSize)" as NSString
+        if let cachedImage = imageCache.object(forKey: cacheKey) {
+            return cachedImage
+        }
+
+        let fileURL = URL(fileURLWithPath: path)
+        guard let source = CGImageSourceCreateWithURL(fileURL as CFURL, nil) else {
+            return nil
+        }
+
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxPixelSize
+        ]
+
+        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
+            return nil
+        }
+
+        let image = NSImage(
+            cgImage: cgImage,
+            size: NSSize(width: cgImage.width, height: cgImage.height)
+        )
+        let cost = max(cgImage.bytesPerRow * cgImage.height, cgImage.width * cgImage.height * 4)
+        imageCache.setObject(image, forKey: cacheKey, cost: cost)
+        return image
+    }
+}
+
 extension ClipboardItem {
     static func fetchRequest() -> NSFetchRequest<ClipboardItem> {
         return NSFetchRequest<ClipboardItem>(entityName: "ClipboardItem")
     }
 }
-

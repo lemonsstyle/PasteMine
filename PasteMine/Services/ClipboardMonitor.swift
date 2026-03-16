@@ -44,8 +44,8 @@ class ClipboardMonitor {
         if let content = pasteboard.string(forType: .string), !content.isEmpty {
             lastHash = HashUtility.sha256(content)
             print("📋 [启动] 已记录当前剪贴板状态（不保存）")
-        } else if let image = getImageFromPasteboard(), let imageData = image.tiffRepresentation {
-            lastHash = HashUtility.sha256Data(imageData)
+        } else if let imagePayload = getImageDataFromPasteboard(allowPDF: true) {
+            lastHash = HashUtility.sha256Data(imagePayload.data)
             print("🖼️  [启动] 已记录当前剪贴板图片（不保存）")
         }
         
@@ -212,9 +212,9 @@ class ClipboardMonitor {
                     )
 
                     // 获取图片尺寸用于通知
-                    var sizeText = ""
-                    if let image = NSImage(data: imageData) {
-                        sizeText = "\(Int(image.size.width))×\(Int(image.size.height))"
+                    let sizeText: String
+                    if let dimensions = ImageStorageManager.shared.imageDimensions(from: imageData) {
+                        sizeText = "\(dimensions.width)×\(dimensions.height)"
                     } else {
                         sizeText = "未知尺寸"
                     }
@@ -462,4 +462,3 @@ class ClipboardMonitor {
         return type.rawValue.uppercased()
     }
 }
-

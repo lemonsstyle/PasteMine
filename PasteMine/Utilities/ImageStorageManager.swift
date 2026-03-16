@@ -8,14 +8,13 @@
 import Foundation
 import AppKit
 import CryptoKit
+import ImageIO
 import UniformTypeIdentifiers
 
 class ImageStorageManager {
     static let shared = ImageStorageManager()
     
     private let storageDirectory: URL
-    private let maxImageSize: Int64 = 10 * 1024 * 1024 // 10MB 默认限制
-    
     private init() {
         // 创建存储目录：~/Library/Application Support/PasteMine/images/
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
@@ -56,11 +55,9 @@ class ImageStorageManager {
         // 获取图片尺寸（用于显示）
         var width = 0
         var height = 0
-        if let image = NSImage(data: data),
-           let representation = image.representations.first {
-            // 使用实际像素尺寸，而非 points
-            width = representation.pixelsWide
-            height = representation.pixelsHigh
+        if let dimensions = imageDimensions(from: data) {
+            width = dimensions.width
+            height = dimensions.height
         }
 
         // 如果文件已存在，直接返回（去重）
@@ -143,6 +140,21 @@ class ImageStorageManager {
         
         return totalSize
     }
+
+    func imageDimensions(from data: Data) -> (width: Int, height: Int)? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil),
+              let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any] else {
+            return nil
+        }
+
+        let width = (properties[kCGImagePropertyPixelWidth] as? NSNumber)?.intValue ?? 0
+        let height = (properties[kCGImagePropertyPixelHeight] as? NSNumber)?.intValue ?? 0
+        guard width > 0, height > 0 else {
+            return nil
+        }
+
+        return (width, height)
+    }
 }
 
 private extension ImageStorageManager {
@@ -167,4 +179,3 @@ private extension ImageStorageManager {
         }
     }
 }
-
