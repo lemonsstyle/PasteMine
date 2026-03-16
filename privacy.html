@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - PasteMine</title>
+    <style>
+        :root {
+            --bg-color: #f5f5f7;
+            --card-bg: #ffffff;
+            --text-primary: #1d1d1f;
+            --text-secondary: #86868b;
+            --accent-color: #007aff;
+            --divider-color: #e5e5e5;
+            --section-bg: #fafafa;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.7;
+            margin: 0;
+            padding: 40px 20px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .main-card {
+            background: var(--card-bg);
+            max-width: 1100px; /* 宽度保持 1100px */
+            margin: 0 auto;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            padding: 80px 80px;
+            box-sizing: border-box;
+        }
+
+        /* 顶部导航 */
+        .header-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 60px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--divider-color);
+        }
+
+        .brand {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .lang-switch button {
+            background: none;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 20px;
+            transition: all 0.2s;
+        }
+
+        .lang-switch button.active {
+            color: var(--text-primary);
+            background: rgba(0,0,0,0.05);
+            border-color: rgba(0,0,0,0.05);
+            font-weight: 600;
+        }
+
+        /* 标题区域 */
+        h1 {
+            font-size: 38px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: -0.01em;
+        }
+
+        .meta-info {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 50px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* 条款样式 */
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 50px;
+            margin-bottom: 24px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-number {
+            background: #eee;
+            color: #555;
+            font-size: 13px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-right: 12px;
+            font-weight: 500;
+        }
+
+        /* 小标题样式 */
+        .subsection-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 24px;
+            margin-bottom: 8px;
+            color: #1d1d1f;
+            display: block;
+        }
+
+        p {
+            font-size: 15px;
+            color: #333;
+            margin-bottom: 16px;
+            text-align: justify;
+        }
+
+        ul {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            font-size: 15px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        /* 强调框 */
+        .summary-box {
+            background: var(--section-bg);
+            border-left: 4px solid var(--accent-color);
+            padding: 20px;
+            margin-bottom: 40px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .summary-box p {
+            margin: 0;
+            font-weight: 500;
+            color: #444;
+        }
+
+        footer {
+            margin-top: 80px;
+            padding-top: 30px;
+            border-top: 1px solid var(--divider-color);
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        a { color: var(--accent-color); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .hidden { display: none; }
+
+        @media (max-width: 800px) {
+            .main-card { padding: 40px 20px; border-radius: 0; max-width: 100%; }
+            h1 { font-size: 28px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-card">
+        <nav class="header-nav">
+            <div class="brand">PasteMine</div>
+            <div class="lang-switch">
+                <button id="btn-en" class="active" onclick="switchLang('en')">English</button>
+                <button id="btn-cn" onclick="switchLang('cn')">中文</button>
+            </div>
+        </nav>
+
+        <article id="content-en">
+            <h1>Privacy Policy</h1>
+            <div class="meta-info">Last Updated: January 3, 2026</div>
+
+            <div class="summary-box">
+                <p><strong>Summary:</strong> PasteMine is a strictly local macOS application. We do not collect, store, or transmit your personal data to any external servers. Your clipboard history remains exclusively on your device.</p>
+            </div>
+
+            <div class="section-title"><span class="section-number">1</span> Introduction</div>
+            <p>PasteMine ("we," "our," or "us") respects the privacy of our users ("user" or "you"). This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our macOS application (the "Application").</p>
+            <p>Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the application.</p>
+
+            <div class="section-title"><span class="section-number">2</span> Interpretation and Definitions</div>
+            <p>For the purposes of this Privacy Policy:</p>
+            <ul>
+                <li><strong>Application</strong> refers to PasteMine, the software program provided by the Developer.</li>
+                <li><strong>Device</strong> means any device that can access the Service such as a computer (macOS).</li>
+                <li><strong>Personal Data</strong> is any information that relates to an identified or identifiable individual.</li>
+                <li><strong>Local Storage</strong> refers to the storage space on your personal Device.</li>
+            </ul>
+
+            <div class="section-title"><span class="section-number">3</span> Collection of Data</div>
+            <p>The Application collects data solely for the purpose of providing its core functionality. This data is processed and stored locally on your Device.</p>
+            
+            <span class="subsection-title">Clipboard Data</span>
+            <p>When you use the "Copy" function (Cmd+C) on your computer, the Application records:</p>
+            <ul>
+                <li>Text content (Plain text and Rich text).</li>
+                <li>Image files (PNG, JPEG, TIFF, etc.).</li>
+                <li>Metadata regarding the source application (App Name and Bundle ID).</li>
+            </ul>
+
+            <span class="subsection-title">Usage Settings</span>
+            <p>We store your preferences locally, such as keyboard shortcuts, sound effect settings, and notification preferences.</p>
+
+            <div class="section-title"><span class="section-number">4</span> Data Storage and Security</div>
+            <p>We adhere to a "Local First" architecture to ensure your data security.</p>
+            <ul>
+                <li><strong>Storage Location:</strong> All data is stored within the Application's sandbox directory (<code>~/Library/Application Support/PasteMine/</code>).</li>
+                <li><strong>No Cloud Sync:</strong> We do not operate any servers. Your data is never uploaded to the cloud or synced across devices by us.</li>
+                <li><strong>No Analytics:</strong> We do not use third-party analytics SDKs (such as Google Analytics or Firebase) to track your usage.</li>
+            </ul>
+
+            <div class="section-title"><span class="section-number">5</span> User Control and Rights</div>
+            <p>Since all data is stored locally, you have full ownership and control over your information:</p>
+            <ul>
+                <li><strong>Access:</strong> You can view all stored history within the Application's main window.</li>
+                <li><strong>Deletion:</strong> You can delete individual records or clear the entire history using the "Clear All" function in the Application.</li>
+                <li><strong>Prevention:</strong> You can set the Application to ignore specific apps (e.g., Password Managers) or specific data types to prevent them from being recorded.</li>
+            </ul>
+
+            <div class="section-title"><span class="section-number">6</span> Changes to This Privacy Policy</div>
+            <p>We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date. You are advised to review this Privacy Policy periodically for any changes.</p>
+
+            <div class="section-title"><span class="section-number">7</span> Contact Us</div>
+            <p>If you have any questions about this Privacy Policy, please contact us via email:</p>
+            <p><a href="wyclemon@foxmail.com">wyclemon@foxmail.com</a></p>
+            
+            <footer>&copy; 2026 lemonstyle. All rights reserved.</footer>
+        </article>
+
+        <article id="content-cn" class="hidden">
+            <h1>隐私政策</h1>
+            <div class="meta-info">最后更新：2026年1月3日</div>
+
+            <div class="summary-box">
+                <p><strong>摘要：</strong> PasteMine 是一款纯本地运行的 macOS 应用程序。我们不会收集、存储或将您的个人数据传输至任何外部服务器。您的剪贴板历史记录仅保存在您的设备上。</p>
+            </div>
+
+            <div class="section-title"><span class="section-number">1</span> 引言</div>
+            <p>PasteMine（以下简称“我们”或“本应用”）尊重并保护所有用户的隐私权。本隐私政策旨在解释当您使用我们的 macOS 应用程序时，我们如何处理您的信息。</p>
+            <p>请仔细阅读本隐私政策。如果您不同意本政策的条款，请停止使用本应用。</p>
+
+            <div class="section-title"><span class="section-number">2</span> 定义</div>
+            <p>为了本隐私政策的目的：</p>
+            <ul>
+                <li><strong>应用程序</strong> 指由开发者提供的软件 PasteMine。</li>
+                <li><strong>设备</strong> 指任何可以访问服务的设备，如计算机（macOS）。</li>
+                <li><strong>个人数据</strong> 指与已识别或可识别的个人有关的任何信息。</li>
+                <li><strong>本地存储</strong> 指您个人设备上的存储空间。</li>
+            </ul>
+
+            <div class="section-title"><span class="section-number">3</span> 数据收集</div>
+            <p>本应用仅为了提供核心功能而处理数据，所有数据均在您的设备本地进行处理和存储。</p>
+            
+            <span class="subsection-title">剪贴板数据</span>
+            <p>当您在计算机上使用“复制”功能（Cmd+C）时，应用程序会记录：</p>
+            <ul>
+                <li>文本内容（纯文本和富文本）。</li>
+                <li>图片文件（PNG, JPEG, TIFF 等）。</li>
+                <li>来源应用程序的元数据（应用名称和 Bundle ID）。</li>
+            </ul>
+
+            <span class="subsection-title">使用设置</span>
+            <p>我们在本地存储您的偏好设置，例如快捷键配置、音效开关和通知偏好。</p>
+
+            <div class="section-title"><span class="section-number">4</span> 数据存储与安全</div>
+            <p>我们遵循“本地优先”的架构以确保您的数据安全。</p>
+            <ul>
+                <li><strong>存储位置：</strong> 所有数据均存储在应用程序的沙盒目录中 (<code>~/Library/Application Support/PasteMine/</code>)。</li>
+                <li><strong>无云端同步：</strong> 我们不运营任何服务器。您的数据从未上传到云端，也不会由我们进行跨设备同步。</li>
+                <li><strong>无数据分析：</strong> 我们不使用任何第三方分析 SDK（如 Google Analytics 或 Firebase）来追踪您的使用情况。</li>
+            </ul>
+
+            <div class="section-title"><span class="section-number">5</span> 用户权利与控制</div>
+            <p>鉴于所有数据均存储在本地，您拥有对自己信息的完全控制权：</p>
+            <ul>
+                <li><strong>访问权：</strong> 您可以在应用程序的主窗口中查看所有存储的历史记录。</li>
+                <li><strong>删除权：</strong> 您可以删除单条记录，或使用“清空历史”功能删除所有数据。</li>
+                <li><strong>预防措施：</strong> 您可以设置应用程序忽略特定的 App（如密码管理器）或特定的数据类型，以防止它们被记录。</li>
+            </ul>
+
+            <div class="section-title"><span class="section-number">6</span> 隐私政策的变更</div>
+            <p>我们可能会不时更新我们的隐私政策。我们将通过在此页面上发布新的隐私政策并更新顶部的“最后更新”日期来通知您任何更改。建议您定期查阅本隐私政策以了解任何变更。</p>
+
+            <div class="section-title"><span class="section-number">7</span> 联系我们</div>
+            <p>如果您对本隐私政策有任何疑问，请通过电子邮件联系我们：</p>
+            <p><a href="mailto:wyclemon@foxmail.com">wyclemon@foxmail.com</a></p>
+            
+            <footer>&copy; 2026 lemonstyle. All rights reserved.</footer>
+        </article>
+    </div>
+
+    <script>
+        function switchLang(lang) {
+            if (lang === 'en') {
+                document.getElementById('content-en').classList.remove('hidden');
+                document.getElementById('content-cn').classList.add('hidden');
+                document.getElementById('btn-en').classList.add('active');
+                document.getElementById('btn-cn').classList.remove('active');
+                document.documentElement.lang = 'en';
+            } else {
+                document.getElementById('content-en').classList.add('hidden');
+                document.getElementById('content-cn').classList.remove('hidden');
+                document.getElementById('btn-en').classList.remove('active');
+                document.getElementById('btn-cn').classList.add('active');
+                document.documentElement.lang = 'zh-CN';
+            }
+        }
+
+        // 自动检测逻辑：如果是中文用户，自动切换到中文；否则保持默认的英文
+        window.onload = function() {
+            const userLang = navigator.language || navigator.userLanguage; 
+            if (userLang.startsWith('zh')) {
+                switchLang('cn');
+            }
+        };
+    </script>
+</body>
+</html>
