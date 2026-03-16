@@ -1,5 +1,5 @@
 <div align="center">
-  <img src=".github/logo.png" width="128" height="128" alt="PasteMine Logo">
+  <img src="./PasteMine/Assets.xcassets/AppIcon.appiconset/logo_256.png" width="128" height="128" alt="PasteMine Logo">
 
   # PasteMine
 
